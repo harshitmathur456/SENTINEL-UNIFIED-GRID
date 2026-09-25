@@ -41,3 +41,4 @@ output/thumbnails/*.jpg
 !output/GOV_FEED_DETECTION_REPORT.md
 !output/anpr_audit_log.csv
 !output/detections.json
+.vercel
