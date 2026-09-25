@@ -682,6 +682,7 @@ html, body {
 .list-filter-bar {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .filter-input {
@@ -714,13 +715,34 @@ html, body {
 .item-scroll-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 480px;
+  gap: 9px;
+  max-height: calc(100vh - 210px);
+  min-height: 200px;
   overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.35) transparent;
+}
+
+.item-scroll-list::-webkit-scrollbar {
+  width: 5px;
+}
+.item-scroll-list::-webkit-scrollbar-track {
+  background: rgba(10, 15, 29, 0.3);
+  border-radius: 4px;
+}
+.item-scroll-list::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.35);
+  border-radius: 4px;
+}
+.item-scroll-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.6);
 }
 
 .list-item-card {
-  background: rgba(15, 23, 42, 0.72);
+  flex-shrink: 0;
+  min-height: fit-content;
+  background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 10px 12px;
