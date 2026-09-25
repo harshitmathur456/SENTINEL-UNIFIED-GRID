@@ -7,7 +7,10 @@ handling Cloudflare session cookies, AES-128 decryption keys, and CORS headers.
 import os
 import time
 import re
+import threading
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from fastapi import APIRouter, HTTPException, Response
 from fastapi.responses import StreamingResponse
 
@@ -21,8 +24,13 @@ BASE_URL = "https://cctv.corp8.cloud"
 class StreamProxySession:
     def __init__(self):
         self.session = requests.Session()
+        adapter = HTTPAdapter(pool_connections=60, pool_maxsize=120, max_retries=Retry(total=2, backoff_factor=0.2))
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
         self.last_login_time = 0
         self.login_ttl = 3600  # 1 hour
+        self.cached_key = None
+        self.lock = threading.Lock()
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Referer": "https://cctv.corp8.cloud/",
@@ -34,30 +42,35 @@ class StreamProxySession:
         }
 
     def ensure_authenticated(self):
-        """Authenticates with the CCTV portal if expired or not yet logged in."""
+        """Authenticates with the CCTV portal if expired or not yet logged in with thread safety."""
         now = time.time()
         if now - self.last_login_time < self.login_ttl and "sentinel" in self.session.cookies:
             return True
 
-        try:
-            print("[PROXY] Authenticating with Sentinel Sandbox (cctv.corp8.cloud)...")
-            login_url = f"{BASE_URL}/auth/login"
-            resp = self.session.post(
-                login_url,
-                data={"email": AUTH_EMAIL, "password": AUTH_CODE},
-                headers={"User-Agent": self.headers["User-Agent"]},
-                timeout=8
-            )
-            if resp.status_code in (200, 302) and "sentinel" in self.session.cookies:
-                self.last_login_time = now
-                print("[PROXY] Authentication successful! Session established.")
+        with self.lock:
+            # Recheck condition once lock is acquired
+            if time.time() - self.last_login_time < self.login_ttl and "sentinel" in self.session.cookies:
                 return True
-            else:
-                print(f"[PROXY] Login failed with status {resp.status_code}")
+
+            try:
+                print("[PROXY] Authenticating with Sentinel Sandbox (cctv.corp8.cloud)...")
+                login_url = f"{BASE_URL}/auth/login"
+                resp = self.session.post(
+                    login_url,
+                    data={"email": AUTH_EMAIL, "password": AUTH_CODE},
+                    headers={"User-Agent": self.headers["User-Agent"]},
+                    timeout=8
+                )
+                if resp.status_code in (200, 302) and "sentinel" in self.session.cookies:
+                    self.last_login_time = time.time()
+                    print("[PROXY] Authentication successful! Session established.")
+                    return True
+                else:
+                    print(f"[PROXY] Login failed with status {resp.status_code}")
+                    return False
+            except Exception as e:
+                print(f"[PROXY] Auth error: {e}")
                 return False
-        except Exception as e:
-            print(f"[PROXY] Auth error: {e}")
-            return False
 
 proxy_manager = StreamProxySession()
 
@@ -116,18 +129,29 @@ def get_encryption_key(cam_id: str):
     if not proxy_manager.ensure_authenticated():
         raise HTTPException(status_code=503, detail="Sandbox authentication unavailable")
 
+    if proxy_manager.cached_key:
+        return Response(
+            content=proxy_manager.cached_key,
+            media_type="application/octet-stream",
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Cache-Control": "public, max-age=86400"
+            }
+        )
+
     try:
         key_url = f"{BASE_URL}/enc.key"
         r = proxy_manager.session.get(key_url, headers=proxy_manager.headers, timeout=5)
         if r.status_code != 200:
             raise HTTPException(status_code=r.status_code, detail="Key fetch error")
 
+        proxy_manager.cached_key = r.content
         return Response(
             content=r.content,
             media_type="application/octet-stream",
             headers={
                 "Access-Control-Allow-Origin": "*",
-                "Cache-Control": "public, max-age=3600"
+                "Cache-Control": "public, max-age=86400"
             }
         )
     except Exception as e:

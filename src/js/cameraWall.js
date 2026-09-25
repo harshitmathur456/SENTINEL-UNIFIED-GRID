@@ -209,50 +209,52 @@ export class CameraWall {
     };
     setInterval(updateClock, 200);
 
-    let streamStarted = false;
+    // Render initial surveillance frame while live HLS stream connects
+    if (canvas) {
+      anprEngine.renderSurveillanceFrame(canvas, cam, null, true);
+    }
 
-    // For 4up or 9up layout, actively stream HLS feeds simultaneously (P0 & Phase A Deliverable)
-    if (this.currentMode === '4up' || this.currentMode === '9up' || cam.id <= 4) {
-      if (videoEl && Hls.isSupported()) {
-        try {
-          const hls = new Hls({
-            enableWorker: true,
-            lowLatencyMode: true,
-            maxBufferLength: 4,
-            manifestLoadingTimeOut: 4000
+    // Actively stream HLS feeds for all camera tiles on the wall
+    if (videoEl && Hls.isSupported()) {
+      try {
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          maxBufferLength: 3,
+          maxMaxBufferLength: 6,
+          manifestLoadingTimeOut: 6000,
+          levelLoadingTimeOut: 6000
+        });
+
+        hls.loadSource(hlsSource);
+        hls.attachMedia(videoEl);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          videoEl.play().then(() => {
+            videoEl.style.display = 'block';
+            if (canvas) canvas.style.display = 'none';
+          }).catch(e => {
+            // Autoplay deferred, keep canvas
           });
+        });
 
-          hls.loadSource(hlsSource);
-          hls.attachMedia(videoEl);
-
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            videoEl.play().then(() => {
-              videoEl.style.display = 'block';
-              if (canvas) canvas.style.display = 'none';
-              streamStarted = true;
-            }).catch(e => {
-              // Autoplay error, keep canvas
-            });
-          });
-
-          hls.on(Hls.Events.ERROR, (e, data) => {
-            if (data.fatal) {
-              // Fallback to canvas
+        hls.on(Hls.Events.ERROR, (e, data) => {
+          if (data.fatal) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
               videoEl.style.display = 'none';
               if (canvas) canvas.style.display = 'block';
             }
-          });
+          }
+        });
 
-          this.activeHlsInstances.push(hls);
-        } catch (err) {
-          console.warn(`[CameraWall] HLS attach failed for Camera ${cam.id}:`, err);
-        }
+        this.activeHlsInstances.push(hls);
+      } catch (err) {
+        console.warn(`[CameraWall] HLS attach failed for Camera ${cam.id}:`, err);
       }
-    }
-
-    // If stream not playing yet, render the high-fidelity surveillance canvas
-    if (!streamStarted && canvas) {
-      anprEngine.renderSurveillanceFrame(canvas, cam, null, true);
     }
   }
 }
