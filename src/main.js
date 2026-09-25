@@ -4,8 +4,8 @@ import { WATCHLIST, VEHICLE_DATABASE } from './data/detections.js';
 import { SentinelMap } from './js/map.js';
 import { searchVehicle, generateEvidencePacket, getVehicleSuggestions } from './js/search.js';
 import { RouteReplayController } from './js/replay.js';
-import { openStreamModal, closeStreamModal } from './js/streamViewer.js';
-import { triggerLiveWatchlistAlert, closeLiveAlertPopup, renderWatchlistItems, addWatchlistTarget } from './js/watchlist.js';
+import { openStreamModal, closeStreamModal, initStreamViewer } from './js/streamViewer.js';
+import { triggerLiveWatchlistAlert, closeLiveAlertPopup, renderWatchlistItems, addWatchlistTarget, isAudioMuted, toggleAudioMute } from './js/watchlist.js';
 import { findNearestPoliceStation, issuePoliceDispatch } from './js/dispatch.js';
 import { anprStorage } from './js/anprStorage.js';
 import { anprEngine } from './js/anprEngine.js';
@@ -15,6 +15,33 @@ import { VideoANPRModal } from './js/videoAnprModal.js';
 document.addEventListener('DOMContentLoaded', () => {
   // Current active vehicle reference
   let currentActiveVehicle = null;
+
+  // 0. Initialize Stream Viewer & Mini-Map Theatre
+  initStreamViewer();
+
+  // Audio Chime Mute/Unmute Toggle
+  const btnToggleAudio = document.getElementById('btn-toggle-audio');
+  const audioBtnIcon = document.getElementById('audio-btn-icon');
+  const audioBtnText = document.getElementById('audio-btn-text');
+
+  function updateAudioButtonUI() {
+    const muted = isAudioMuted();
+    if (audioBtnIcon) {
+      audioBtnIcon.className = muted ? 'fas fa-volume-xmark' : 'fas fa-volume-high';
+      audioBtnIcon.style.color = muted ? 'var(--accent-rose)' : 'var(--accent-emerald)';
+    }
+    if (audioBtnText) {
+      audioBtnText.textContent = muted ? 'Sound OFF' : 'Sound ON';
+    }
+  }
+
+  if (btnToggleAudio) {
+    updateAudioButtonUI();
+    btnToggleAudio.addEventListener('click', () => {
+      toggleAudioMute();
+      updateAudioButtonUI();
+    });
+  }
 
   // 1. Initialize GIS Map
   const sentinelMap = new SentinelMap('gis-map');
@@ -123,6 +150,31 @@ document.addEventListener('DOMContentLoaded', () => {
   function executeSearch(queryText) {
     if (suggestionsDropdown) suggestionsDropdown.style.display = 'none';
 
+    if (!queryText || queryText.trim() === '') {
+      fuzzyHint.style.display = 'none';
+      currentActiveVehicle = null;
+      updateCCTVEvidenceCard(null);
+
+      vehicleSummaryContainer.innerHTML = `
+        <div class="hud-card search-empty-hud">
+          <i class="fas fa-satellite-dish" style="font-size: 26px; color: var(--accent-cyan); animation: pulseBeacon 2s infinite;"></i>
+          <p style="color: #fff; font-weight: 700; font-size: 13px;">ANPR Vehicle Search & Route Reconstruction</p>
+          <p style="font-size: 11px; margin-top: 4px; line-height: 1.4; color: var(--text-secondary);">
+            Enter a vehicle registration number above or pick an evaluation test vehicle below to reconstruct its route across the Gujarat CCTV network.
+          </p>
+        </div>
+      `;
+      detectionTimelineContainer.innerHTML = `
+        <div class="empty-state-card" style="margin: 8px 0;">
+          <i class="fas fa-clock-rotate-left"></i>
+          <div class="empty-state-title">Evidence Buffer Idle</div>
+          <div class="empty-state-desc">Select or trace a vehicle to populate chronological camera passages and evidence clips.</div>
+        </div>
+      `;
+      replayController.hide();
+      return;
+    }
+
     const res = searchVehicle(queryText);
     if (!res || !res.isMatch) {
       fuzzyHint.style.display = 'none';
@@ -139,7 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
       `;
-      detectionTimelineContainer.innerHTML = '';
+      detectionTimelineContainer.innerHTML = `
+        <div class="empty-state-card" style="margin: 8px 0;">
+          <i class="fas fa-video-slash"></i>
+          <div class="empty-state-title">No Passage History</div>
+          <div class="empty-state-desc">No footage evidence clips or PTS timeline entries found for "${queryText}".</div>
+        </div>
+      `;
       replayController.hide();
       return;
     }
@@ -472,32 +530,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderCamerasList() {
     if (!camerasList) return;
-    const query = cameraSearchInput ? cameraSearchInput.value : '';
+    const query = cameraSearchInput ? cameraSearchInput.value.trim() : '';
     const status = cameraStatusFilter ? cameraStatusFilter.value : 'all';
 
     let html = '';
+    let count = 0;
     CAMERAS.forEach(cam => {
       if (status !== 'all' && cam.status !== status) return;
       if (query && !cam.name.toLowerCase().includes(query.toLowerCase()) && !cam.location_text.toLowerCase().includes(query.toLowerCase()) && !cam.city.toLowerCase().includes(query.toLowerCase())) {
         return;
       }
-
+      count++;
       html += `
-        <div class="list-item-card" data-cam-id="${cam.id}">
+        <div class="list-item-card ${cam.status}" data-cam-id="${cam.id}">
           <div class="list-item-header">
             <span class="list-item-title">${cam.name}</span>
             <span class="status-tag ${cam.status}">${cam.status}</span>
           </div>
-          <div class="list-item-subtitle">${cam.location_text} (${cam.city})</div>
+          <div class="list-item-subtitle" title="${cam.location_text} (${cam.city})">${cam.location_text} (${cam.city})</div>
           <div class="list-item-details">
             <span>RES: ${cam.width && cam.height ? `${cam.width}x${cam.height}` : '1920x1080'}</span>
             <span>FPS: ${cam.fps || 25}</span>
             <span style="color:var(--accent-emerald);">Coverage: ${cam.coverage_radius_m}m</span>
           </div>
+          <div class="list-item-actions-row">
+            <button class="btn-cam-action primary btn-cam-live" data-cam-id="${cam.id}" title="Watch Live Stream directly on site">
+              <i class="fas fa-play"></i> Watch Live
+            </button>
+            <button class="btn-cam-action btn-cam-locate" data-cam-id="${cam.id}" title="Center Map on Camera">
+              <i class="fas fa-location-crosshairs"></i> Locate
+            </button>
+          </div>
         </div>
       `;
     });
-    camerasList.innerHTML = html;
+
+    if (count === 0) {
+      camerasList.innerHTML = `
+        <div class="empty-state-card">
+          <i class="fas fa-video-slash"></i>
+          <div class="empty-state-title">No CCTV Cameras Found</div>
+          <div class="empty-state-desc">No cameras match "${query}". Try clearing the search or status filter.</div>
+        </div>
+      `;
+    } else {
+      camerasList.innerHTML = html;
+    }
+
+    // Attach button actions
+    document.querySelectorAll('#cameras-scroll-list .btn-cam-live').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const camId = parseInt(btn.dataset.camId, 10);
+        const cam = CAMERAS.find(c => c.id === camId);
+        if (cam) {
+          sentinelMap.panToWaypoint(cam.lat, cam.lng, 16);
+          openStreamModal(cam);
+        }
+      });
+    });
+
+    document.querySelectorAll('#cameras-scroll-list .btn-cam-locate').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const camId = parseInt(btn.dataset.camId, 10);
+        const cam = CAMERAS.find(c => c.id === camId);
+        if (cam) {
+          sentinelMap.panToWaypoint(cam.lat, cam.lng, 16);
+        }
+      });
+    });
 
     // Click camera card to fly to on map & open stream modal with ANPR canvas
     document.querySelectorAll('#cameras-scroll-list .list-item-card').forEach(card => {
@@ -551,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="list-item-title">${st.name}</span>
             <span class="hud-badge">${st.district}</span>
           </div>
-          <div class="list-item-subtitle">${st.address}</div>
+          <div class="list-item-subtitle" title="${st.address}">${st.address}</div>
           <div class="list-item-details">
             <span style="color:var(--accent-cyan);"><i class="fas fa-phone"></i> ${st.phone || '100'}</span>
             <span style="font-size:10px; color:${st.location_precision === 'city' ? '#fbbf24' : '#fda4af'};">${st.location_precision} precision</span>
@@ -560,7 +662,17 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     });
 
-    stationsList.innerHTML = html || '<div style="color:var(--text-muted); padding:10px; font-size:12px;">No police stations found</div>';
+    if (count === 0) {
+      stationsList.innerHTML = `
+        <div class="empty-state-card">
+          <i class="fas fa-building-shield"></i>
+          <div class="empty-state-title">No Police Stations Found</div>
+          <div class="empty-state-desc">No stations match "${query}". Try changing the district filter.</div>
+        </div>
+      `;
+    } else {
+      stationsList.innerHTML = html;
+    }
 
     document.querySelectorAll('#stations-scroll-list .list-item-card').forEach(card => {
       card.addEventListener('click', () => {

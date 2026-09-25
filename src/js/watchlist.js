@@ -57,10 +57,25 @@ export function updateWatchlistBadge() {
   }
 }
 
+let isMuted = localStorage.getItem('sentinel_audio_muted') === 'true';
+
+export function isAudioMuted() {
+  return isMuted;
+}
+
+export function toggleAudioMute() {
+  isMuted = !isMuted;
+  localStorage.setItem('sentinel_audio_muted', isMuted ? 'true' : 'false');
+  return isMuted;
+}
+
 /**
  * Play synthesizer surveillance alarm chime using Web Audio API
+ * Designed to be clean, tactical, and demo-friendly (dual-tone electronic ping, non-abrasive)
  */
 export function playAlertSiren() {
+  if (isMuted) return;
+
   try {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -69,24 +84,36 @@ export function playAlertSiren() {
       audioCtx.resume();
     }
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const now = audioCtx.currentTime;
 
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.3); // A4
-    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.6);
+    // Primary tactical bell / chime (D5 -> A5)
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
 
-    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, now); // D5
+    osc1.frequency.exponentialRampToValueAtTime(880.00, now + 0.15); // A5
 
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(1174.66, now); // D6 harmonic
+    osc2.frequency.exponentialRampToValueAtTime(1760.00, now + 0.15);
 
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.8);
+    // Smooth tactical attack and decay envelope
+    gainNode.gain.setValueAtTime(0.001, now);
+    gainNode.gain.linearRampToValueAtTime(0.18, now + 0.04);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.8);
+    osc2.stop(now + 0.8);
   } catch (e) {
-    console.warn('Audio siren playback skipped:', e);
+    console.warn('Audio chime playback skipped:', e);
   }
 }
 
