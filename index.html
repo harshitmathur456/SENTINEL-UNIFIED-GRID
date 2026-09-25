@@ -51,6 +51,10 @@
       </div>
 
       <div class="header-actions">
+        <button id="btn-toggle-audio" class="btn-header" title="Toggle Alert Audio Chime">
+          <i class="fas fa-volume-high" id="audio-btn-icon" style="color: var(--accent-emerald);"></i>
+          <span id="audio-btn-text">Audio ON</span>
+        </button>
         <button id="btn-screen-record" class="btn-header" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5;" title="Record 1080p Screen Demo Video for Hackathon Submission (P0 Item 5)">
           <i class="fas fa-circle-dot" id="rec-dot-icon" style="color: #ef4444;"></i>
           <span id="record-btn-text">Record Demo Video</span>
@@ -357,28 +361,39 @@
       </section>
     </main>
 
-    <!-- LIVE CAMERA STREAM VIEWER MODAL (SHARED COMPONENT: WALL + GIS MAP) -->
+    <!-- LIVE CAMERA STREAM VIEWER & GIS MINI-MAP MODAL (SHARED COMPONENT: WALL + GIS MAP) -->
     <div id="stream-modal" class="modal-backdrop">
-      <div class="hud-modal" style="max-width: 920px;">
+      <div class="hud-modal stream-theatre-modal">
         <div class="hud-modal-header">
           <div class="modal-title-wrap">
-            <i class="fas fa-video" style="color: var(--accent-emerald);"></i>
+            <i class="fas fa-video" style="color: var(--accent-emerald); font-size: 18px;"></i>
             <div>
-              <strong id="modal-cam-name" style="font-size: 14px; color: #fff;">Camera 1</strong>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <strong id="modal-cam-name" style="font-size: 15px; color: #fff;">Camera 1</strong>
+                <span id="stream-live-indicator-badge" class="stream-mode-badge live"><i class="fas fa-circle-dot"></i> LIVE HLS STREAM</span>
+              </div>
               <div id="modal-cam-dept" style="font-size: 11px; color: var(--text-muted);">Ahmedabad City Police</div>
             </div>
           </div>
-          <button id="btn-close-stream-modal" class="btn-modal-close"><i class="fas fa-xmark"></i></button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="btn-close-stream-modal" class="btn-modal-close"><i class="fas fa-xmark"></i></button>
+          </div>
         </div>
-        <div class="hud-modal-body">
-          <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px;">
-            <!-- Left: Video Player & Radar Feed -->
-            <div>
-              <div class="stream-preview-box" style="height: 270px;">
+
+        <div class="hud-modal-body stream-theatre-body">
+          <div class="stream-theatre-grid">
+            <!-- LEFT COLUMN: EMBEDDED LIVE STREAM PLAYER -->
+            <div class="stream-primary-col">
+              <div class="stream-preview-box">
                 <video id="stream-hls-video" style="display:none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; border-radius: 8px;" autoplay muted playsinline></video>
                 <canvas id="stream-canvas-preview" width="600" height="340" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; border-radius: 8px;"></canvas>
                 <div class="stream-radar-hud" style="z-index: 2;">
                   <div class="radar-sweep-line"></div>
+                </div>
+                <!-- Loading Spinner Overlay -->
+                <div id="stream-loading-spinner" class="stream-loading-overlay" style="display: none; z-index: 4;">
+                  <div class="spinner-ring"></div>
+                  <span>Connecting to Live Stream...</span>
                 </div>
                 <div class="stream-telemetry-badge" style="z-index: 3;">
                   <div style="color: var(--accent-emerald); font-weight: 700;">● LIVE TELEMETRY FEED</div>
@@ -390,35 +405,58 @@
                 </div>
               </div>
 
-              <!-- Endpoints -->
-              <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: var(--font-mono); font-size: 10px;">
-                <div class="hud-card" style="padding: 8px;">
-                  <div style="color: var(--text-muted); margin-bottom: 2px;">RTSP ENDPOINT:</div>
-                  <div id="modal-cam-rtsp" style="color: #93c5fd; word-break: break-all;">rtsp://live.corp8.cloud:8554/stream/1</div>
+              <div class="stream-tech-endpoints-grid">
+                <div class="hud-card" style="padding: 8px 10px;">
+                  <div style="color: var(--text-muted); font-size: 10px; margin-bottom: 2px;">RTSP INGESTION ENDPOINT:</div>
+                  <div id="modal-cam-rtsp" style="color: #93c5fd; font-size: 11px; font-family: var(--font-mono); word-break: break-all;">rtsp://live.corp8.cloud:8554/stream/1</div>
                 </div>
-                <div class="hud-card" style="padding: 8px;">
-                  <div style="color: var(--text-muted); margin-bottom: 2px;">HLS PROXY FEED:</div>
-                  <div id="modal-cam-hls" style="color: #34d399; word-break: break-all;">/api/stream/cam01/index.m3u8</div>
+                <div class="hud-card" style="padding: 8px 10px;">
+                  <div style="color: var(--text-muted); font-size: 10px; margin-bottom: 2px;">HLS LIVE PROXY / INDEX:</div>
+                  <div id="modal-cam-hls" style="color: #34d399; font-size: 11px; font-family: var(--font-mono); word-break: break-all;">/api/stream/cam01/index.m3u8</div>
                 </div>
               </div>
             </div>
 
-            <!-- Right: Embedded Leaflet Mini-Map, Police Station & Action Controls -->
-            <div style="display: flex; flex-direction: column;">
-              <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; display: flex; justify-content: space-between;">
-                <span><i class="fas fa-map-pin" style="color: var(--accent-blue);"></i> EMBEDDED GEOLOCATION MAP</span>
-                <span style="color: var(--accent-cyan);">COVERAGE MAPPED</span>
+            <!-- RIGHT COLUMN: PER-CAMERA AUTO-ZOOMED MINI-MAP & DISPATCH -->
+            <div class="stream-secondary-col">
+              <div class="mini-map-card-header">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-crosshairs" style="color: var(--accent-cyan);"></i>
+                  <span style="font-weight: 700; font-size: 12px; color: #fff;">CAMERA-LEVEL GIS COVERAGE</span>
+                </div>
+                <button id="btn-mini-recenter" class="btn-mini-action" title="Recenter Mini-Map on Camera">
+                  <i class="fas fa-location-crosshairs"></i> Recenter
+                </button>
               </div>
-              <div id="modal-mini-map" class="modal-mini-map" style="height: 160px; margin-top: 0;"></div>
 
-              <div class="hud-card" style="padding: 8px; margin-top: 8px;">
-                <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">NEAREST GUJARAT POLICE STATION:</div>
-                <div id="modal-nearest-station" style="font-size: 11px; margin-top: 3px; color: #f1f5f9;">
-                  Calculating response unit...
+              <!-- Mini-Map Canvas Wrapper -->
+              <div class="mini-map-viewport-wrapper">
+                <div id="stream-mini-map" class="stream-mini-map-canvas"></div>
+                <div id="modal-cam-coverage-tier" class="coverage-tier-badge tier-fhd">50m Tier (Full HD ≥1080p)</div>
+              </div>
+
+              <!-- Mandatory Coverage Assumption Disclaimer -->
+              <div class="mini-map-disclaimer">
+                <i class="fas fa-circle-info" style="color: var(--accent-amber); flex-shrink: 0; margin-top: 1px;"></i>
+                <span><strong>Coverage Disclaimer:</strong> Estimated coverage, not measured — based on resolution-derived assumption, pending real FOV data from camera owners.</span>
+              </div>
+
+              <!-- Nearest Police Intercept Station Card -->
+              <div class="hud-card nearest-dispatch-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span style="color: var(--accent-cyan); font-weight: 700; font-size: 11px;"><i class="fas fa-building-shield"></i> Nearest Police Unit</span>
+                  <button id="btn-modal-dispatch-ps" class="btn-action-sm primary" style="padding: 2px 8px; font-size: 10px;">
+                    <i class="fas fa-bullhorn"></i> Dispatch
+                  </button>
+                </div>
+                <div id="modal-nearest-ps-info" style="font-size: 11px;">
+                  <div style="color: #fff; font-weight: 600;">Navrangpura Police Station</div>
+                  <div style="color: var(--text-muted); font-size: 10px;">Distance: 1.8 km &bull; ETA: ~5 mins</div>
                 </div>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+              <!-- Action Controls -->
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
                 <button id="btn-modal-locate-map" class="btn-action-sm primary" style="width: 100%; justify-content: center; padding: 7px;">
                   <i class="fas fa-crosshairs"></i> Focus Camera on Main GIS Map
                 </button>
@@ -434,9 +472,12 @@
             </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; border-top: 1px solid var(--border-subtle); padding-top: 8px;">
-            <span>STATUS: <span id="modal-cam-status" class="status-tag live">LIVE</span></span>
-            <span style="color: var(--text-muted); font-size: 11px;">Zero bulk video archival footprint • Complies with Gujarat Sandbox streaming policies</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 11px; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              STATUS: <span id="modal-cam-status" class="status-tag live">LIVE</span>
+              <span style="color: var(--text-muted);">&bull; Real-time frame synchronization via PTS</span>
+            </span>
+            <span style="color: var(--text-muted);">Zero local archival storage footprint &bull; Sandboxed rolling ring-buffer only</span>
           </div>
         </div>
       </div>
