@@ -72,7 +72,7 @@ export function openStreamModal(camera, detection = null) {
   if (camRtspEl) camRtspEl.textContent = camera.rtsp_url || `rtsp://live.corp8.cloud:8554/stream/${camera.id}`;
 
   const camHlsEl = document.getElementById('modal-cam-hls');
-  const hlsUrl = camera.hls_url || `/api/stream/cam${padId}/index.m3u8`;
+  const hlsUrl = `/api/stream/cam${padId}/index.m3u8`;
   if (camHlsEl) camHlsEl.textContent = hlsUrl;
 
   const camCoordsEl = document.getElementById('modal-cam-coords');
@@ -130,12 +130,19 @@ export function openStreamModal(camera, detection = null) {
 
   if (loadingSpinner) loadingSpinner.style.display = 'flex';
 
-  let hlsAttached = false;
-
-  // Cleanup prior HLS session
+  // Cleanup prior video and HLS session
   if (activeHls) {
-    activeHls.destroy();
+    try {
+      activeHls.destroy();
+    } catch (e) {}
     activeHls = null;
+  }
+
+  if (videoEl) {
+    videoEl.pause();
+    videoEl.removeAttribute('src');
+    videoEl.load();
+    videoEl.style.display = 'none';
   }
 
   const HlsConstructor = window.Hls || Hls;
@@ -148,7 +155,8 @@ export function openStreamModal(camera, detection = null) {
         lowLatencyMode: true,
         maxBufferLength: 5,
         maxMaxBufferLength: 10,
-        manifestLoadingTimeOut: 4000
+        manifestLoadingTimeOut: 6000,
+        levelLoadingTimeOut: 6000
       });
 
       activeHls.loadSource(hlsUrl);
@@ -163,7 +171,6 @@ export function openStreamModal(camera, detection = null) {
             liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE HLS STREAM`;
             liveStatusBadge.className = 'stream-mode-badge live';
           }
-          hlsAttached = true;
         }).catch(e => {
           console.log('[HLS] Autoplay deferred, showing canvas backup:', e);
           fallbackToSurveillanceCanvas();
@@ -172,8 +179,20 @@ export function openStreamModal(camera, detection = null) {
 
       activeHls.on(HlsConstructor.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          console.warn('[HLS] Live stream offline/unreachable, falling back to simulated OSD canvas:', data.type);
-          fallbackToSurveillanceCanvas();
+          switch (data.type) {
+            case HlsConstructor.ErrorTypes.NETWORK_ERROR:
+              console.warn('[HLS Modal] Network error, recovering...', data);
+              activeHls.startLoad();
+              break;
+            case HlsConstructor.ErrorTypes.MEDIA_ERROR:
+              console.warn('[HLS Modal] Media error, recovering...', data);
+              activeHls.recoverMediaError();
+              break;
+            default:
+              console.warn('[HLS Modal] Unrecoverable error, falling back to simulated OSD canvas:', data);
+              fallbackToSurveillanceCanvas();
+              break;
+          }
         }
       });
     } catch (e) {
@@ -221,11 +240,15 @@ export function closeStreamModal() {
   const videoEl = document.getElementById('stream-hls-video');
   if (videoEl) {
     videoEl.pause();
-    videoEl.src = '';
+    videoEl.removeAttribute('src');
+    videoEl.load();
+    videoEl.style.display = 'none';
   }
 
   if (activeHls) {
-    activeHls.destroy();
+    try {
+      activeHls.destroy();
+    } catch (e) {}
     activeHls = null;
   }
 }

@@ -26,7 +26,7 @@ export const CAMERAS = [
     status: "degraded", // metadata missing (0x0)
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/1",
     webrtc_url: "http://live.corp8.cloud:8889/stream/1/whep",
-    hls_url: "/live/stream/1/index.m3u8",
+    hls_url: "/api/stream/cam01/index.m3u8",
     department: "Ahmedabad City Police",
     coverage_radius_m: 25,
     heading_deg: 45
@@ -49,7 +49,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/2",
     webrtc_url: "http://live.corp8.cloud:8889/stream/2/whep",
-    hls_url: "/live/stream/2/index.m3u8",
+    hls_url: "/api/stream/cam02/index.m3u8",
     department: "Ahmedabad Traffic Police",
     coverage_radius_m: 25,
     heading_deg: 180
@@ -72,7 +72,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/3",
     webrtc_url: "http://live.corp8.cloud:8889/stream/3/whep",
-    hls_url: "/live/stream/3/index.m3u8",
+    hls_url: "/api/stream/cam03/index.m3u8",
     department: "Gujarat Police - Critical Infrastructure",
     coverage_radius_m: 25,
     heading_deg: 90
@@ -95,7 +95,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/4",
     webrtc_url: "http://live.corp8.cloud:8889/stream/4/whep",
-    hls_url: "/live/stream/4/index.m3u8",
+    hls_url: "/api/stream/cam04/index.m3u8",
     department: "Ahmedabad Traffic Police",
     coverage_radius_m: 25,
     heading_deg: 270
@@ -118,7 +118,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/5",
     webrtc_url: "http://live.corp8.cloud:8889/stream/5/whep",
-    hls_url: "/live/stream/5/index.m3u8",
+    hls_url: "/api/stream/cam05/index.m3u8",
     department: "Ahmedabad Traffic Police",
     coverage_radius_m: 25,
     heading_deg: 315
@@ -141,7 +141,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/6",
     webrtc_url: "http://live.corp8.cloud:8889/stream/6/whep",
-    hls_url: "/live/stream/6/index.m3u8",
+    hls_url: "/api/stream/cam06/index.m3u8",
     department: "Junagadh City Police",
     coverage_radius_m: 50,
     heading_deg: 135
@@ -164,7 +164,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/7",
     webrtc_url: "http://live.corp8.cloud:8889/stream/7/whep",
-    hls_url: "/live/stream/7/index.m3u8",
+    hls_url: "/api/stream/cam07/index.m3u8",
     department: "Gir Somnath Police",
     coverage_radius_m: 25,
     heading_deg: 60
@@ -187,7 +187,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/8",
     webrtc_url: "http://live.corp8.cloud:8889/stream/8/whep",
-    hls_url: "/live/stream/8/index.m3u8",
+    hls_url: "/api/stream/cam08/index.m3u8",
     department: "Junagadh City Police",
     coverage_radius_m: 25,
     heading_deg: 0
@@ -210,7 +210,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/9",
     webrtc_url: "http://live.corp8.cloud:8889/stream/9/whep",
-    hls_url: "/live/stream/9/index.m3u8",
+    hls_url: "/api/stream/cam09/index.m3u8",
     department: "Junagadh Traffic Branch",
     coverage_radius_m: 25,
     heading_deg: 220
@@ -233,7 +233,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/10",
     webrtc_url: "http://live.corp8.cloud:8889/stream/10/whep",
-    hls_url: "/live/stream/10/index.m3u8",
+    hls_url: "/api/stream/cam10/index.m3u8",
     department: "Junagadh City Police",
     coverage_radius_m: 25,
     heading_deg: 180
@@ -256,7 +256,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/11",
     webrtc_url: "http://live.corp8.cloud:8889/stream/11/whep",
-    hls_url: "/live/stream/11/index.m3u8",
+    hls_url: "/api/stream/cam11/index.m3u8",
     department: "Junagadh Industrial Security",
     coverage_radius_m: 25,
     heading_deg: 45
@@ -279,7 +279,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/12",
     webrtc_url: "http://live.corp8.cloud:8889/stream/12/whep",
-    hls_url: "/live/stream/12/index.m3u8",
+    hls_url: "/api/stream/cam12/index.m3u8",
     department: "Gandhinagar Highway Patrol",
     coverage_radius_m: 25,
     heading_deg: 15
@@ -302,7 +302,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/13",
     webrtc_url: "http://live.corp8.cloud:8889/stream/13/whep",
-    hls_url: "/live/stream/13/index.m3u8",
+    hls_url: "/api/stream/cam13/index.m3u8",
     department: "Ahmedabad Municipal Corp",
     coverage_radius_m: 50,
     heading_deg: 200
@@ -325,7 +325,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/14",
     webrtc_url: "http://live.corp8.cloud:8889/stream/14/whep",
-    hls_url: "/live/stream/14/index.m3u8",
+    hls_url: "/api/stream/cam14/index.m3u8",
     department: "Ahmedabad Municipal Corp",
     coverage_radius_m: 50,
     heading_deg: 90
@@ -348,7 +348,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/15",
     webrtc_url: "http://live.corp8.cloud:8889/stream/15/whep",
-    hls_url: "/live/stream/15/index.m3u8",
+    hls_url: "/api/stream/cam15/index.m3u8",
     department: "Ahmedabad Municipal Corp",
     coverage_radius_m: 50,
     heading_deg: 260
@@ -371,7 +371,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/16",
     webrtc_url: "http://live.corp8.cloud:8889/stream/16/whep",
-    hls_url: "/live/stream/16/index.m3u8",
+    hls_url: "/api/stream/cam16/index.m3u8",
     department: "Ahmedabad Traffic Police",
     coverage_radius_m: 50,
     heading_deg: 320
@@ -394,7 +394,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/17",
     webrtc_url: "http://live.corp8.cloud:8889/stream/17/whep",
-    hls_url: "/live/stream/17/index.m3u8",
+    hls_url: "/api/stream/cam17/index.m3u8",
     department: "GSRTC / Rajkot Police",
     coverage_radius_m: 50,
     heading_deg: 180
@@ -417,7 +417,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/18",
     webrtc_url: "http://live.corp8.cloud:8889/stream/18/whep",
-    hls_url: "/live/stream/18/index.m3u8",
+    hls_url: "/api/stream/cam18/index.m3u8",
     department: "Rajkot City Police",
     coverage_radius_m: 25,
     heading_deg: 90
@@ -440,7 +440,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/19",
     webrtc_url: "http://live.corp8.cloud:8889/stream/19/whep",
-    hls_url: "/live/stream/19/index.m3u8",
+    hls_url: "/api/stream/cam19/index.m3u8",
     department: "Rural Panchayat Surveillance",
     coverage_radius_m: 25,
     heading_deg: 110
@@ -463,7 +463,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/20",
     webrtc_url: "http://live.corp8.cloud:8889/stream/20/whep",
-    hls_url: "/live/stream/20/index.m3u8",
+    hls_url: "/api/stream/cam20/index.m3u8",
     department: "Ahmedabad City Police",
     coverage_radius_m: 25,
     heading_deg: 75
@@ -486,7 +486,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/21",
     webrtc_url: "http://live.corp8.cloud:8889/stream/21/whep",
-    hls_url: "/live/stream/21/index.m3u8",
+    hls_url: "/api/stream/cam21/index.m3u8",
     department: "Patan District Police",
     coverage_radius_m: 25,
     heading_deg: 300
@@ -509,7 +509,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/22",
     webrtc_url: "http://live.corp8.cloud:8889/stream/22/whep",
-    hls_url: "/live/stream/22/index.m3u8",
+    hls_url: "/api/stream/cam22/index.m3u8",
     department: "Banaskantha Police",
     coverage_radius_m: 50,
     heading_deg: 40
@@ -532,7 +532,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/23",
     webrtc_url: "http://live.corp8.cloud:8889/stream/23/whep",
-    hls_url: "/live/stream/23/index.m3u8",
+    hls_url: "/api/stream/cam23/index.m3u8",
     department: "Navsari District Police",
     coverage_radius_m: 35,
     heading_deg: 160
@@ -555,7 +555,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/24",
     webrtc_url: "http://live.corp8.cloud:8889/stream/24/whep",
-    hls_url: "/live/stream/24/index.m3u8",
+    hls_url: "/api/stream/cam24/index.m3u8",
     department: "Gandhinagar Police",
     coverage_radius_m: 25,
     heading_deg: 270
@@ -578,7 +578,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/25",
     webrtc_url: "http://live.corp8.cloud:8889/stream/25/whep",
-    hls_url: "/live/stream/25/index.m3u8",
+    hls_url: "/api/stream/cam25/index.m3u8",
     department: "Navsari District Police",
     coverage_radius_m: 25,
     heading_deg: 190
@@ -601,7 +601,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/26",
     webrtc_url: "http://live.corp8.cloud:8889/stream/26/whep",
-    hls_url: "/live/stream/26/index.m3u8",
+    hls_url: "/api/stream/cam26/index.m3u8",
     department: "Navsari District Police",
     coverage_radius_m: 50,
     heading_deg: 85
@@ -624,7 +624,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/27",
     webrtc_url: "http://live.corp8.cloud:8889/stream/27/whep",
-    hls_url: "/live/stream/27/index.m3u8",
+    hls_url: "/api/stream/cam27/index.m3u8",
     department: "Western Railway Police / Bilimora",
     coverage_radius_m: 35,
     heading_deg: 240
@@ -647,7 +647,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/28",
     webrtc_url: "http://live.corp8.cloud:8889/stream/28/whep",
-    hls_url: "/live/stream/28/index.m3u8",
+    hls_url: "/api/stream/cam28/index.m3u8",
     department: "Navsari District Police",
     coverage_radius_m: 25,
     heading_deg: 30
@@ -670,7 +670,7 @@ export const CAMERAS = [
     status: "live",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/29",
     webrtc_url: "http://live.corp8.cloud:8889/stream/29/whep",
-    hls_url: "/live/stream/29/index.m3u8",
+    hls_url: "/api/stream/cam29/index.m3u8",
     department: "Gujarat Highway Patrol",
     coverage_radius_m: 35,
     heading_deg: 175
@@ -693,7 +693,7 @@ export const CAMERAS = [
     status: "degraded",
     rtsp_url: "rtsp://live.corp8.cloud:8554/stream/30",
     webrtc_url: "http://live.corp8.cloud:8889/stream/30/whep",
-    hls_url: "/live/stream/30/index.m3u8",
+    hls_url: "/api/stream/cam30/index.m3u8",
     department: "Kachchh East Police",
     coverage_radius_m: 25,
     heading_deg: 120
