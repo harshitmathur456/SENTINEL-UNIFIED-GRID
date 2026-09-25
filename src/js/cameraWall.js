@@ -188,13 +188,13 @@ export class CameraWall {
 
     // Attach stream or animated surveillance canvas
     setTimeout(() => {
-      this.attachFeedToTile(tile, cam, hlsSource);
+      this.attachFeedToTile(tile, cam, hlsSource, index);
     }, index * 40);
 
     return tile;
   }
 
-  attachFeedToTile(tile, cam, hlsSource) {
+  attachFeedToTile(tile, cam, hlsSource, index = 0) {
     const videoEl = tile.querySelector('.tile-video-el');
     const canvas = tile.querySelector('.tile-canvas-preview');
     const clockEl = tile.querySelector('.tile-osd-clock');
@@ -214,27 +214,46 @@ export class CameraWall {
       anprEngine.renderSurveillanceFrame(canvas, cam, null, true);
     }
 
-    // Actively stream HLS feeds for all camera tiles on the wall
-    if (videoEl && Hls.isSupported()) {
+    // Streaming controller to maintain 60 FPS and prevent CPU/GPU decoding bottlenecks
+    let hlsAttached = false;
+    const startHlsStream = () => {
+      if (hlsAttached || !videoEl || !Hls.isSupported()) return;
+      hlsAttached = true;
+
       try {
         const hls = new Hls({
           enableWorker: true,
           lowLatencyMode: true,
-          maxBufferLength: 3,
-          maxMaxBufferLength: 6,
-          manifestLoadingTimeOut: 6000,
-          levelLoadingTimeOut: 6000
+          maxBufferLength: 2,
+          maxMaxBufferLength: 4,
+          maxBufferSize: 2 * 1024 * 1024,
+          manifestLoadingTimeOut: 10000,
+          levelLoadingTimeOut: 10000,
+          fragLoadingTimeOut: 15000,
+          fragLoadingMaxRetry: 6,
+          manifestLoadingMaxRetry: 6
+        });
+
+        // Function to smoothly switch from canvas to live video
+        const revealLiveVideo = () => {
+          videoEl.style.display = 'block';
+          videoEl.style.zIndex = '2';
+          if (canvas) canvas.style.display = 'none';
+        };
+
+        videoEl.addEventListener('playing', revealLiveVideo);
+        videoEl.addEventListener('loadeddata', revealLiveVideo);
+        videoEl.addEventListener('timeupdate', () => {
+          if (videoEl.currentTime > 0) revealLiveVideo();
         });
 
         hls.loadSource(hlsSource);
         hls.attachMedia(videoEl);
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          videoEl.play().then(() => {
-            videoEl.style.display = 'block';
-            if (canvas) canvas.style.display = 'none';
-          }).catch(e => {
-            // Autoplay deferred, keep canvas
+          videoEl.muted = true;
+          videoEl.play().catch(e => {
+            // Autoplay deferred by browser policy, will resume on user interaction
           });
         });
 
@@ -255,7 +274,17 @@ export class CameraWall {
       } catch (err) {
         console.warn(`[CameraWall] HLS attach failed for Camera ${cam.id}:`, err);
       }
+    };
+
+    const shouldAutoStream = (this.currentMode === '4up') || (this.currentMode === '9up') || (index < 8);
+    if (shouldAutoStream) {
+      startHlsStream();
     }
+
+    // Attach stream on mouse hover for any other camera on the wall
+    tile.addEventListener('mouseenter', () => {
+      startHlsStream();
+    });
   }
 }
 
