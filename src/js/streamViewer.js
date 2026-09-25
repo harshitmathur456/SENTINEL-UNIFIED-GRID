@@ -155,25 +155,37 @@ export function openStreamModal(camera, detection = null) {
         lowLatencyMode: true,
         maxBufferLength: 5,
         maxMaxBufferLength: 10,
-        manifestLoadingTimeOut: 6000,
-        levelLoadingTimeOut: 6000
+        manifestLoadingTimeOut: 8000,
+        levelLoadingTimeOut: 8000,
+        fragLoadingTimeOut: 15000,
+        fragLoadingMaxRetry: 6
+      });
+
+      // When video actually starts playing, immediately reveal video and hide canvas & spinner
+      const onModalVideoPlaying = () => {
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        videoEl.style.display = 'block';
+        videoEl.style.zIndex = '2';
+        if (canvas) canvas.style.display = 'none';
+        if (liveStatusBadge) {
+          liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE HLS STREAM`;
+          liveStatusBadge.className = 'stream-mode-badge live';
+        }
+      };
+
+      videoEl.addEventListener('playing', onModalVideoPlaying);
+      videoEl.addEventListener('loadeddata', onModalVideoPlaying);
+      videoEl.addEventListener('timeupdate', () => {
+        if (videoEl.currentTime > 0) onModalVideoPlaying();
       });
 
       activeHls.loadSource(hlsUrl);
       activeHls.attachMedia(videoEl);
 
       activeHls.on(HlsConstructor.Events.MANIFEST_PARSED, () => {
-        if (loadingSpinner) loadingSpinner.style.display = 'none';
-        videoEl.play().then(() => {
-          videoEl.style.display = 'block';
-          if (canvas) canvas.style.display = 'none';
-          if (liveStatusBadge) {
-            liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE HLS STREAM`;
-            liveStatusBadge.className = 'stream-mode-badge live';
-          }
-        }).catch(e => {
-          console.log('[HLS] Autoplay deferred, showing canvas backup:', e);
-          fallbackToSurveillanceCanvas();
+        videoEl.muted = true;
+        videoEl.play().catch(e => {
+          console.log('[HLS Modal] Autoplay deferred, waiting for user click or buffer:', e);
         });
       });
 
