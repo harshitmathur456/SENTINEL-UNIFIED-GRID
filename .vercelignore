@@ -1,0 +1,12 @@
+.git
+.github
+node_modules
+backend
+pipeline
+scripts
+output
+*.pt
+*.csv
+*.mp4
+*.ts
+password.txt
