@@ -116,8 +116,9 @@ export class CameraWall {
     const fpsText = cam.fps ? `${cam.fps} FPS` : '25.0 FPS';
     const statusLabel = (cam.status || 'LIVE').toUpperCase();
 
-    // HLS Stream Source URL (prefers local proxy /api/stream/camXX/index.m3u8)
-    const hlsSource = `/api/stream/cam${padId}/index.m3u8`;
+    // HLS Stream Source URL (prefers local proxy /api/stream/mock.mp4)
+    let hlsSource = cam.stream_hls || cam.hls_url || "/api/stream/mock.mp4";
+    if (hlsSource.startsWith('/api')) hlsSource = 'http://127.0.0.1:8080' + hlsSource;
 
     tile.innerHTML = `
       <div class="tile-header">

@@ -72,7 +72,8 @@ export function openStreamModal(camera, detection = null) {
   if (camRtspEl) camRtspEl.textContent = camera.rtsp_url || `rtsp://live.corp8.cloud:8554/stream/${camera.id}`;
 
   const camHlsEl = document.getElementById('modal-cam-hls');
-  const hlsUrl = `/api/stream/cam${padId}/index.m3u8`;
+  let hlsUrl = camera.stream_hls || camera.hls_url || "/api/stream/mock.mp4";
+  if (hlsUrl.startsWith('/api')) hlsUrl = 'http://127.0.0.1:8080' + hlsUrl;
   if (camHlsEl) camHlsEl.textContent = hlsUrl;
 
   const camCoordsEl = document.getElementById('modal-cam-coords');
