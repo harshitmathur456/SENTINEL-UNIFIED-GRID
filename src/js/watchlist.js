@@ -183,7 +183,8 @@ let lastSeenAlertId = -1;
 
 export async function pollLiveAlerts(onFlyToCallback) {
   try {
-    const res = await fetch('http://127.0.0.1:8080/api/alerts?limit=5');
+    const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
+    const res = await fetch(`${API_BASE}/api/alerts?limit=5`);
     if (res.ok) {
       const data = await res.json();
       if (data.alerts && data.alerts.length > 0) {

@@ -151,7 +151,8 @@ class ANPRStorageManager {
    */
   async syncFromPipelineDetections() {
     try {
-      const res = await fetch('http://127.0.0.1:8080/api/detections');
+      const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
+      const res = await fetch(`${API_BASE}/api/detections`);
       if (!res.ok) return { success: false, count: 0 };
       const pipelineEvents = await res.json();
       if (!Array.isArray(pipelineEvents) || pipelineEvents.length === 0) {

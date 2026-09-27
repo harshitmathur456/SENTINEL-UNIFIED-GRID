@@ -159,7 +159,8 @@ export async function searchVehicle(plateQuery) {
 
   // Try Live API first (Priority 0 Task 2)
   try {
-    const apiRes = await fetch(`http://127.0.0.1:8080/api/search?plate=${query}`);
+    const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
+    const apiRes = await fetch(`${API_BASE}/api/search?plate=${query}`);
     if (apiRes.ok) {
       const data = await apiRes.json();
       if (data.total_sightings > 0) {

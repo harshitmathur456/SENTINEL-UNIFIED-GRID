@@ -637,9 +637,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Poll camera health telemetry
   window.cameraHealthData = {};
+  const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
+
   async function pollCameraHealth() {
     try {
-      const res = await fetch('http://127.0.0.1:8080/api/cameras/health');
+      const res = await fetch(`${API_BASE}/api/cameras/health`);
       if (res.ok) {
         const data = await res.json();
         let changed = false;
@@ -939,7 +941,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('camera_id', activeCam.id);
         formData.append('camera_name', activeCam.name);
         formData.append('target_plate', 'GJ01ST0007');
-        const resp = await fetch('http://127.0.0.1:8080/api/anpr/run', { method: 'POST', body: formData });
+        const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
+        const resp = await fetch(`${API_BASE}/api/anpr/run`, { method: 'POST', body: formData });
         const data = await resp.json();
         alert(`✅ ANPR Inference Completed for ${activeCam.name}!\nDetected: ${data.detections?.[0]?.plate_text || 'Plate Read'}\nConfidence: ${data.detections?.[0]?.confidence || '96.8'}%\nRecorded to SQLite Database (sentinel.db)`);
       } catch (err) {
