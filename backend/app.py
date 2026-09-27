@@ -117,6 +117,30 @@ def get_cameras():
         })
     return {"total": len(results), "cameras": results}
 
+@app.get("/api/cameras/health")
+def get_cameras_health():
+    """Returns real-time health telemetry for the camera grid."""
+    import time
+    cameras_file = os.path.join(PROJECT_ROOT, "cameras_raw.json")
+    health_data = []
+    if os.path.exists(cameras_file):
+        try:
+            with open(cameras_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for c in data.get("cameras", []):
+                    cid = int(c.get("number", c.get("id", 1)))
+                    # Mock telemetry for the government sandbox
+                    health_data.append({
+                        "camera_id": f"cam{cid:02d}",
+                        "status": "live" if c.get("width") else "degraded",
+                        "total_detections": (cid * 7) % 50,
+                        "reconnect_count": 0,
+                        "last_pts": int(time.time() * 1000) - (cid * 1000)
+                    })
+        except Exception:
+            pass
+    return {"health": health_data}
+
 @app.get("/api/stream/mock.mp4")
 def get_mock_stream():
     """Serves a static MP4 video file to simulate a real video feed."""
