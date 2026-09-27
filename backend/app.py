@@ -13,6 +13,8 @@ import sys
 import time
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()
 from typing import Optional, List
 from fastapi import FastAPI, Query, HTTPException, UploadFile, File, Form, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -111,7 +113,7 @@ def get_cameras():
             "codec": c.get("codec") or "H.264",
             "resolution": f"{c.get('width', 1920)}x{c.get('height', 1080)}" if c.get("width") else "1920x1080",
             "fps": float(c.get("fps") or 25.0),
-            "stream_hls": f"/cdn/{slug}/index.m3u8",
+            "stream_hls": f"/api/stream/proxy/{slug}/index.m3u8",
             "stream_rtsp": c.get("rtsp_url", f"rtsp://live.corp8.cloud:8554/stream/{cid}"),
             "status": "live" if c.get("width") else "degraded"
         })
@@ -150,6 +152,42 @@ def get_mock_stream():
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Mock video not found")
     return FileResponse(video_path, media_type="video/mp4")
+
+import httpx
+from fastapi.responses import StreamingResponse
+from fastapi import Request, Response
+from starlette.background import BackgroundTask
+
+@app.get("/api/stream/proxy/{slug}/{file_path:path}")
+async def proxy_hls_stream(slug: str, file_path: str, request: Request):
+    """
+    Proxies authenticated HLS stream from the Hackathon CDN to bypass CORS 
+    and inject Basic Auth credentials from .env
+    """
+    email = os.getenv("HACKATHON_EMAIL", "alice@example.com")
+    password = os.getenv("HACKATHON_PASSWORD", "secret")
+    
+    target_url = f"https://cctv.corp8.cloud/{slug}/{file_path}"
+    
+    # We use httpx to stream the response back
+    client = httpx.AsyncClient(auth=(email, password), verify=False)
+    
+    req = client.build_request("GET", target_url)
+    try:
+        r = await client.send(req, stream=True)
+        return StreamingResponse(
+            r.aiter_raw(),
+            status_code=r.status_code,
+            headers={
+                "Content-Type": r.headers.get("Content-Type", "application/vnd.apple.mpegurl"),
+                "Access-Control-Allow-Origin": "*"
+            },
+            background=BackgroundTask(r.aclose)
+        )
+    except Exception as e:
+        await client.aclose()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=502, detail=str(e))
 
 @app.get("/api/detections")
 def get_detections(limit: int = Query(50, ge=1, le=200)):

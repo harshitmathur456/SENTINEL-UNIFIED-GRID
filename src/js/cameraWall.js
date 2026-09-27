@@ -117,7 +117,8 @@ export class CameraWall {
     const statusLabel = (cam.status || 'LIVE').toUpperCase();
 
     // HLS Stream Source URL
-    const hlsSource = cam.stream_hls || cam.hls_url || `/cdn/cam${padId}/index.m3u8`;
+    const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
+    const hlsSource = cam.stream_hls || cam.hls_url || `${API_BASE}/api/stream/proxy/cam${padId}/index.m3u8`;
 
     tile.innerHTML = `
       <div class="tile-header">

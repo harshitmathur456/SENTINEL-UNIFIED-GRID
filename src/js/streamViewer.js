@@ -71,8 +71,9 @@ export function openStreamModal(camera, detection = null) {
   const camRtspEl = document.getElementById('modal-cam-rtsp');
   if (camRtspEl) camRtspEl.textContent = camera.rtsp_url || `rtsp://live.corp8.cloud:8554/stream/${camera.id}`;
 
+  const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
   const camHlsEl = document.getElementById('modal-cam-hls');
-  const hlsUrl = camera.stream_hls || camera.hls_url || `/cdn/cam${padId}/index.m3u8`;
+  const hlsUrl = camera.stream_hls || camera.hls_url || `${API_BASE}/api/stream/proxy/cam${padId}/index.m3u8`;
   if (camHlsEl) camHlsEl.textContent = hlsUrl;
 
   const camCoordsEl = document.getElementById('modal-cam-coords');
