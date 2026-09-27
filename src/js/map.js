@@ -27,8 +27,12 @@ export class SentinelMap {
 
     // Clean Tile Layers (100% Free, High Resolution, ZERO "API Key" Watermarks)
     const darkTileLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 20, subdomains: 'abcd' }
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { 
+        attribution: '&copy; OpenStreetMap contributors', 
+        maxZoom: 19,
+        className: 'dark-map-tiles'
+      }
     );
 
     this.darkLayerGroup = L.layerGroup([darkTileLayer]);

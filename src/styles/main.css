@@ -2367,3 +2367,7 @@ html, body {
   text-align: center;
 }
 
+/* OpenStreetMap Dark Filter (100% Free, No API Key) */
+.dark-map-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%) grayscale(40%);
+}

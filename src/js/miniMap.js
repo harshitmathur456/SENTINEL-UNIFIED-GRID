@@ -30,10 +30,14 @@ export class CameraMiniMap {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
-    // Base Tile: CartoDB Dark Matter
+    // Base Tile: OpenStreetMap with CSS Dark Filter
     const darkTileLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      { attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 20, subdomains: 'abcd' }
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { 
+        attribution: '&copy; OpenStreetMap', 
+        maxZoom: 19,
+        className: 'dark-map-tiles'
+      }
     );
 
     this.map = L.map(this.containerId, {
