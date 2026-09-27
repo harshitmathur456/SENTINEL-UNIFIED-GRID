@@ -1,7 +1,7 @@
 # Sentinel Unified Grid (SUD) — Gujarat CCTV & Vehicle Intelligence Platform
 
 > **Gujarat Police Innovation Hackathon 2026**  
-> *Team CuriousClass | Harshit Mathur & Arin Harwani*
+> Harshit Mathur & Arin Harwani*
 
 Sentinel Unified Grid is a high-performance, vendor-neutral CCTV integration and AI-driven vehicle intelligence command platform designed for the Gujarat State CCTV Grid. It addresses the challenge of unifying disparate Video Management Systems (VMS) across government departments into an interactive GIS registry with real-time ANPR inference, automated watchlist alerts, and multi-camera route reconstruction.
 
