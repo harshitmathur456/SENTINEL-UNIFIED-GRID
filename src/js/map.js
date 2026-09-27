@@ -26,17 +26,12 @@ export class SentinelMap {
     this.gujaratMaskLayer = L.layerGroup();
 
     // Clean Tile Layers (100% Free, High Resolution, ZERO "API Key" Watermarks)
-    const esriDarkBase = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '&copy; Esri, HERE, DeLorme, MapmyIndia', maxZoom: 18 }
+    const darkTileLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 20, subdomains: 'abcd' }
     );
 
-    const esriDarkRef = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '', maxZoom: 18 }
-    );
-
-    this.darkLayerGroup = L.layerGroup([esriDarkBase, esriDarkRef]);
+    this.darkLayerGroup = L.layerGroup([darkTileLayer]);
 
     this.streetLayer = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
@@ -75,9 +70,6 @@ export class SentinelMap {
     // Custom Top-Right Zoom Control
     L.control.zoom({ position: 'topright' }).addTo(this.map);
 
-    // Initial fit to Gujarat state
-    this.fitGujarat();
-
     // Add default layers
     this.gujaratMaskLayer.addTo(this.map);
     this.gujaratBoundaryLayer.addTo(this.map);
@@ -94,6 +86,9 @@ export class SentinelMap {
     this.renderCameras();
     this.renderPoliceStations();
     this.initMapInteractions();
+
+    // Initial fit to cameras instead of whole state
+    this.fitCameras();
   }
 
   fitGujarat() {
@@ -101,6 +96,19 @@ export class SentinelMap {
       padding: [30, 30],
       animate: true
     });
+  }
+
+  fitCameras() {
+    const camLatLngs = CAMERAS.map(c => [c.lat, c.lng]);
+    if (camLatLngs.length > 0) {
+      this.map.fitBounds(L.latLngBounds(camLatLngs), {
+        padding: [50, 50],
+        maxZoom: 14,
+        animate: true
+      });
+    } else {
+      this.fitGujarat();
+    }
   }
 
   /**

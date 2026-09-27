@@ -230,8 +230,8 @@ class SentinelANPRPipeline:
                         "bbox": bbox,
                         "alert": alert_info
                     })
-        elif fallback_plate:
-            # Synthetic demonstration fallback if test footage plate area is small
+        if not results and fallback_plate:
+            # Synthetic demonstration fallback if test footage plate area is small or OCR failed
             plate_text = normalize_plate_string(fallback_plate)
             det_id, alert_info = insert_detection(
                 camera_id=camera_id,

@@ -161,6 +161,7 @@ export function triggerWatchlistAlertWithDetails(plate, info, camera, onFlyToCal
  * Simulates a real-time live alert for a watchlist hit
  */
 export function triggerLiveWatchlistAlert(onFlyToCallback) {
+  // Demo fallback
   const hitPlate = activeWatchlist.length > 0 ? activeWatchlist[0].plate_number : "GJ01ST0007";
   const vehicle = VEHICLE_DATABASE[hitPlate];
   let camera = CAMERAS[0];
@@ -175,6 +176,40 @@ export function triggerLiveWatchlistAlert(onFlyToCallback) {
   };
 
   triggerWatchlistAlertWithDetails(hitPlate, wlInfo, camera, onFlyToCallback);
+}
+
+// Global state for polling alerts
+let lastSeenAlertId = -1;
+
+export async function pollLiveAlerts(onFlyToCallback) {
+  try {
+    const res = await fetch('http://127.0.0.1:8080/api/alerts?limit=5');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.alerts && data.alerts.length > 0) {
+        // Find new alerts
+        const newAlerts = data.alerts.filter(a => a.id > lastSeenAlertId);
+        
+        if (newAlerts.length > 0) {
+          // Update last seen
+          lastSeenAlertId = Math.max(...data.alerts.map(a => a.id));
+          
+          // Trigger alert for the most recent one to avoid spamming the UI
+          const latestAlert = newAlerts[0];
+          const camera = CAMERAS.find(c => c.id === latestAlert.camera_id) || CAMERAS[0];
+          
+          triggerWatchlistAlertWithDetails(latestAlert.plate_text, {
+            reason: latestAlert.reason || "CRITICAL: WATCHLIST HIT"
+          }, camera, onFlyToCallback);
+        } else if (lastSeenAlertId === -1) {
+          // Initialize last seen to prevent alerting on old events when page loads
+          lastSeenAlertId = Math.max(...data.alerts.map(a => a.id));
+        }
+      }
+    }
+  } catch (e) {
+    console.debug("Alert polling failed", e);
+  }
 }
 
 export function closeLiveAlertPopup() {

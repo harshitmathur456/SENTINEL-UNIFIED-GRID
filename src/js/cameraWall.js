@@ -276,7 +276,7 @@ export class CameraWall {
       }
     };
 
-    const shouldAutoStream = (this.currentMode === '4up') || (this.currentMode === '9up') || (index < 8);
+    const shouldAutoStream = (this.currentMode === '4up') || (this.currentMode === '9up') || (index < 9);
     if (shouldAutoStream) {
       startHlsStream();
     }

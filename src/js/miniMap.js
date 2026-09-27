@@ -30,15 +30,10 @@ export class CameraMiniMap {
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
-    // Base Tile: Esri World Dark Gray Base
-    const esriDark = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '&copy; Esri, DeLorme, MapmyIndia', maxZoom: 19 }
-    );
-
-    const esriRef = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '', maxZoom: 19 }
+    // Base Tile: CartoDB Dark Matter
+    const darkTileLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      { attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 20, subdomains: 'abcd' }
     );
 
     this.map = L.map(this.containerId, {
@@ -48,7 +43,7 @@ export class CameraMiniMap {
       maxZoom: 19,
       zoomControl: false,
       attributionControl: false,
-      layers: [esriDark, esriRef]
+      layers: [darkTileLayer]
     });
 
     // Custom top-right compact zoom controls

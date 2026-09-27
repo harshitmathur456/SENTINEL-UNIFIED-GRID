@@ -14,7 +14,7 @@ import time
 import json
 from datetime import datetime
 from typing import Optional, List
-from fastapi import FastAPI, Query, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, Query, HTTPException, UploadFile, File, Form, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -176,8 +176,17 @@ def list_watchlist():
     """Returns all targets in the Watchlist DB."""
     return {"watchlist": get_all_watchlist()}
 
+def get_current_user_role(x_user_role: str = Header("operator")):
+    """Simple RBAC simulation via header."""
+    return x_user_role.lower()
+
+def require_admin(role: str = Depends(get_current_user_role)):
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="RBAC Error: This action requires DGP ADMIN privileges.")
+    return role
+
 @app.post("/api/watchlist")
-def create_watchlist_entry(entry: WatchlistCreate):
+def create_watchlist_entry(entry: WatchlistCreate, role: str = Depends(require_admin)):
     """Enrolls a new target into the Watchlist DB."""
     success = add_watchlist_record(
         plate=entry.plate_text,
@@ -188,7 +197,7 @@ def create_watchlist_entry(entry: WatchlistCreate):
     return {"success": success, "plate": entry.plate_text.upper()}
 
 @app.delete("/api/watchlist/{record_id}")
-def delete_watchlist_entry(record_id: int):
+def delete_watchlist_entry(record_id: int, role: str = Depends(require_admin)):
     """Removes a target from the Watchlist DB."""
     success = delete_watchlist_record(record_id)
     return {"success": success, "deleted_id": record_id}

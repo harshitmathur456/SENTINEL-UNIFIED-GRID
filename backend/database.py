@@ -15,7 +15,8 @@ from datetime import datetime
 DB_PATH = os.path.join(os.path.dirname(__file__), "sentinel.db")
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    conn.execute("PRAGMA journal_mode=WAL;")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -154,8 +155,10 @@ def query_plate(plate_query):
     norm = "".join(c for c in plate_query.upper() if c.isalnum())
 
     cursor.execute("""
-    SELECT * FROM detections
+    SELECT *, MAX(confidence)
+    FROM detections
     WHERE plate_normalized = ?
+    GROUP BY camera_id, CAST(pts_ms / 3600000 AS INT)
     ORDER BY pts_ms ASC
     """, (norm,))
     rows = cursor.fetchall()

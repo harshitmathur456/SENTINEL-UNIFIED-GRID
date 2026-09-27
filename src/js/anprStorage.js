@@ -151,7 +151,7 @@ class ANPRStorageManager {
    */
   async syncFromPipelineDetections() {
     try {
-      const res = await fetch('/api/pipeline-detections');
+      const res = await fetch('http://127.0.0.1:8080/api/detections');
       if (!res.ok) return { success: false, count: 0 };
       const pipelineEvents = await res.json();
       if (!Array.isArray(pipelineEvents) || pipelineEvents.length === 0) {

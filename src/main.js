@@ -5,7 +5,7 @@ import { SentinelMap } from './js/map.js';
 import { searchVehicle, generateEvidencePacket, getVehicleSuggestions } from './js/search.js';
 import { RouteReplayController } from './js/replay.js';
 import { openStreamModal, closeStreamModal, getActiveModalCamera, initStreamViewer } from './js/streamViewer.js';
-import { triggerLiveWatchlistAlert, closeLiveAlertPopup, renderWatchlistItems, addWatchlistTarget, isAudioMuted, toggleAudioMute } from './js/watchlist.js';
+import { triggerLiveWatchlistAlert, pollLiveAlerts, closeLiveAlertPopup, renderWatchlistItems, addWatchlistTarget, isAudioMuted, toggleAudioMute } from './js/watchlist.js';
 import { findNearestPoliceStation, issuePoliceDispatch } from './js/dispatch.js';
 import { anprStorage } from './js/anprStorage.js';
 import { anprEngine } from './js/anprEngine.js';
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateGridBadgeCount();
 
-  function executeSearch(queryText) {
+  async function executeSearch(queryText) {
     if (suggestionsDropdown) suggestionsDropdown.style.display = 'none';
 
     if (!queryText || queryText.trim() === '') {
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const res = searchVehicle(queryText);
+    const res = await searchVehicle(queryText);
     if (!res || !res.isMatch) {
       fuzzyHint.style.display = 'none';
       currentActiveVehicle = null;
@@ -250,10 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="vehicle-header-row">
           <span class="vehicle-plate-badge">${v.plate_number}</span>
           ${v.is_real_pipeline_output
-            ? '<span class="status-tag live" style="background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981;"><i class="fas fa-microchip"></i> LIVE PIPELINE (output/detections.json)</span>'
-            : isWatchlist 
-              ? '<span class="status-tag offline"><i class="fas fa-bell"></i> WATCHLIST HIT</span>' 
-              : '<span class="status-tag live"><i class="fas fa-check-circle"></i> GRID VERIFIED</span>'}
+            ? '<span class="status-tag live" style="background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981;"><i class="fas fa-microchip"></i> LIVE PIPELINE</span>'
+            : v.is_seed_data
+              ? '<span class="status-tag offline" style="background: rgba(245, 158, 11, 0.25); color: #f59e0b; border: 1px solid #f59e0b;"><i class="fas fa-vial"></i> DEMO/SEED DATA</span>'
+              : isWatchlist 
+                ? '<span class="status-tag offline"><i class="fas fa-bell"></i> WATCHLIST HIT</span>' 
+                : '<span class="status-tag live"><i class="fas fa-check-circle"></i> GRID VERIFIED</span>'}
         </div>
 
         <div class="vehicle-route-banner">
@@ -542,6 +544,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       count++;
+      
+      const health = window.cameraHealthData ? window.cameraHealthData[cam.id] : null;
+      let healthHtml = '';
+      if (health) {
+         const lastSeen = health.last_pts ? new Date(health.last_pts).toISOString().replace('T', ' ').slice(11, 19) + ' UTC' : 'N/A';
+         healthHtml = `<div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">
+           <i class="fas fa-heartbeat" style="color: #10b981;"></i> Status: <strong>${health.status}</strong> | Detections: ${health.total_detections} | Reconnects: ${health.reconnect_count}
+           <br><i class="fas fa-clock"></i> Last frame PTS: ${lastSeen}
+         </div>`;
+      }
+      
       html += `
         <div class="list-item-card ${cam.status}" data-cam-id="${cam.id}">
           <div class="list-item-header">
@@ -549,7 +562,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="status-tag ${cam.status}">${cam.status}</span>
           </div>
           <div class="list-item-subtitle" title="${cam.location_text} (${cam.city})">${cam.location_text} (${cam.city})</div>
-          <div class="list-item-details">
+          ${healthHtml}
+          <div class="list-item-details" style="margin-top: 6px;">
             <span>RES: ${cam.width && cam.height ? `${cam.width}x${cam.height}` : '1920x1080'}</span>
             <span>FPS: ${cam.fps || 25}</span>
             <span style="color:var(--accent-emerald);">Coverage: ${cam.coverage_radius_m}m</span>
@@ -620,6 +634,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cameraSearchInput) cameraSearchInput.addEventListener('input', renderCamerasList);
   if (cameraStatusFilter) cameraStatusFilter.addEventListener('change', renderCamerasList);
   renderCamerasList();
+
+  // Poll camera health telemetry
+  window.cameraHealthData = {};
+  async function pollCameraHealth() {
+    try {
+      const res = await fetch('http://127.0.0.1:8080/api/cameras/health');
+      if (res.ok) {
+        const data = await res.json();
+        let changed = false;
+        data.health.forEach(h => {
+          window.cameraHealthData[h.camera_id] = h;
+          changed = true;
+        });
+        if (changed && document.getElementById('tab-cameras').classList.contains('active')) {
+           renderCamerasList();
+        }
+      }
+    } catch (e) {
+      console.debug("Camera health polling failed", e);
+    }
+  }
+  setInterval(pollCameraHealth, 5000);
 
   // 8. Police Stations Directory Tab
   const stationsList = document.getElementById('stations-scroll-list');
@@ -756,15 +792,33 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Please search or trace a vehicle first to export an evidence packet.');
         return;
       }
-      const packet = generateEvidencePacket(currentActiveVehicle);
-      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(packet, null, 2));
+      const v = currentActiveVehicle;
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Plate Number,Watchlist Hit,Camera ID,Location,Timestamp (UTC),Confidence,Speed Est (km/h)\n";
+      
+      if (v.detections) {
+        v.detections.forEach(d => {
+          const row = [
+            v.plate_number,
+            v.is_watchlist_hit ? "YES" : "NO",
+            d.camera_id,
+            `"${d.location_name}"`,
+            d.timestamp_utc,
+            d.confidence,
+            d.speed_est_kmh
+          ].join(",");
+          csvContent += row + "\n";
+        });
+      }
+      
+      const encodedUri = encodeURI(csvContent);
       const dlAnchor = document.createElement('a');
-      dlAnchor.setAttribute('href', dataStr);
-      dlAnchor.setAttribute('download', `Sentinel_Evidence_Packet_${currentActiveVehicle.plate_number}.json`);
+      dlAnchor.setAttribute('href', encodedUri);
+      dlAnchor.setAttribute('download', `Sentinel_Evidence_Packet_${v.plate_number}.csv`);
       document.body.appendChild(dlAnchor);
       dlAnchor.click();
       dlAnchor.remove();
-      alert(`✅ Forensic Evidence Packet Exported!\nVehicle: ${currentActiveVehicle.plate_number}\nHops: ${currentActiveVehicle.detections.length}\nFormat: JSON (PTS Timestamps + Geolocation Bounds)`);
+      alert(`📄 Forensic Evidence Packet Exported!\nVehicle: ${v.plate_number}\nHops: ${v.detections ? v.detections.length : 0}\nFormat: CSV`);
     });
   }
 
@@ -791,6 +845,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auto-sync real detections on startup
   performPipelineSync(false);
+
+  // Poll for live alerts every 3 seconds
+  setInterval(() => {
+    pollLiveAlerts((lat, lng, zoom) => sentinelMap.panToWaypoint(lat, lng, zoom));
+  }, 3000);
 
   // 10. Map HUD Controls
   const chkCircles = document.getElementById('chk-layer-circles');
@@ -880,7 +939,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('camera_id', activeCam.id);
         formData.append('camera_name', activeCam.name);
         formData.append('target_plate', 'GJ01ST0007');
-        const resp = await fetch('/api/anpr/run', { method: 'POST', body: formData });
+        const resp = await fetch('http://127.0.0.1:8080/api/anpr/run', { method: 'POST', body: formData });
         const data = await resp.json();
         alert(`✅ ANPR Inference Completed for ${activeCam.name}!\nDetected: ${data.detections?.[0]?.plate_text || 'Plate Read'}\nConfidence: ${data.detections?.[0]?.confidence || '96.8'}%\nRecorded to SQLite Database (sentinel.db)`);
       } catch (err) {

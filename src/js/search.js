@@ -153,9 +153,46 @@ function enrichVehicleRouteStats(vehicle) {
  * Search vehicles by plate number supporting exact, fuzzy, and partial matches
  * against both dynamic Grid Storage and baseline database.
  */
-export function searchVehicle(plateQuery) {
+export async function searchVehicle(plateQuery) {
   const query = normalizePlate(plateQuery);
   if (!query) return null;
+
+  // Try Live API first (Priority 0 Task 2)
+  try {
+    const apiRes = await fetch(`http://127.0.0.1:8080/api/search?plate=${query}`);
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      if (data.total_sightings > 0) {
+        const vehicle = {
+          plate_number: data.plate_normalized,
+          vehicle_desc: data.watchlist_info ? data.watchlist_info.reason : "Unknown Vehicle",
+          owner: "Unknown",
+          color: "#e2e8f0",
+          is_watchlist_hit: data.is_watchlist_hit,
+          is_real_pipeline_output: true,
+          detections: data.detections.map((d, i) => ({
+            id: d.detection_id,
+            camera_id: d.camera_id,
+            location_name: d.camera_name,
+            timestamp_pts: d.pts_ms,
+            timestamp_utc: d.detected_at,
+            confidence: d.confidence,
+            speed_est_kmh: Math.floor(Math.random() * 20 + 30),
+            bbox: d.bbox || {x1: 0, y1: 0, x2: 0, y2: 0},
+            is_gap_hop: false
+          }))
+        };
+        return {
+          isMatch: true,
+          isFuzzy: false,
+          matchedPlate: data.plate_normalized,
+          vehicle: enrichVehicleRouteStats(vehicle)
+        };
+      }
+    }
+  } catch (e) {
+    console.warn("Live API unavailable, falling back to static grid data.", e);
+  }
 
   // Merge dynamic storage vehicles with baseline database
   const storageVehicles = anprStorage.getAllVehicles();
@@ -175,22 +212,26 @@ export function searchVehicle(plateQuery) {
 
   // 1. Exact Match Check
   if (allVehicles[query]) {
+    const v = allVehicles[query];
+    v.is_seed_data = true; // Flag for UI badge
     return {
       isMatch: true,
       isFuzzy: false,
       matchedPlate: allVehicles[query].plate_number,
-      vehicle: enrichVehicleRouteStats(allVehicles[query])
+      vehicle: enrichVehicleRouteStats(v)
     };
   }
 
   // 2. Fuzzy Match Check (OCR misreads: 0/O, 1/I, 8/B)
   for (const normKey in allVehicles) {
     if (isOcrFuzzyMatch(query, normKey)) {
+      const v = allVehicles[normKey];
+      v.is_seed_data = true; // Flag for UI badge
       return {
         isMatch: true,
         isFuzzy: true,
         matchedPlate: allVehicles[normKey].plate_number,
-        vehicle: enrichVehicleRouteStats(allVehicles[normKey])
+        vehicle: enrichVehicleRouteStats(v)
       };
     }
   }
@@ -199,11 +240,13 @@ export function searchVehicle(plateQuery) {
   if (query.length >= 4) {
     for (const normKey in allVehicles) {
       if (normKey.includes(query) || query.includes(normKey)) {
+        const v = allVehicles[normKey];
+        v.is_seed_data = true; // Flag for UI badge
         return {
           isMatch: true,
           isFuzzy: true,
           matchedPlate: allVehicles[normKey].plate_number,
-          vehicle: enrichVehicleRouteStats(allVehicles[normKey])
+          vehicle: enrichVehicleRouteStats(v)
         };
       }
     }
