@@ -147,9 +147,37 @@ export function openStreamModal(camera, detection = null) {
 
   const HlsConstructor = window.Hls || Hls;
 
-  // Attempt live HLS stream loading if Hls is supported
-  if (videoEl && HlsConstructor && HlsConstructor.isSupported() && hlsUrl) {
-    try {
+  // When video actually starts playing, immediately reveal video and hide canvas & spinner
+  const onModalVideoPlaying = () => {
+    if (loadingSpinner) loadingSpinner.style.display = 'none';
+    videoEl.style.display = 'block';
+    videoEl.style.zIndex = '2';
+    if (canvas) canvas.style.display = 'none';
+    if (liveStatusBadge) {
+      liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE FEED`;
+      liveStatusBadge.className = 'stream-mode-badge live';
+    }
+  };
+
+  if (videoEl) {
+    videoEl.addEventListener('playing', onModalVideoPlaying);
+    videoEl.addEventListener('loadeddata', onModalVideoPlaying);
+    videoEl.addEventListener('timeupdate', () => {
+      if (videoEl.currentTime > 0) onModalVideoPlaying();
+    });
+  }
+
+  // Attempt live stream loading (MP4 natively or HLS)
+  if (videoEl && hlsUrl) {
+    if (hlsUrl.endsWith('.mp4')) {
+      videoEl.src = hlsUrl;
+      videoEl.loop = true;
+      videoEl.muted = true;
+      videoEl.play().catch(e => {
+        console.warn('[Modal] Autoplay deferred for MP4:', e);
+      });
+    } else if (HlsConstructor && HlsConstructor.isSupported()) {
+      try {
       activeHls = new HlsConstructor({
         enableWorker: true,
         lowLatencyMode: true,
@@ -159,24 +187,6 @@ export function openStreamModal(camera, detection = null) {
         levelLoadingTimeOut: 8000,
         fragLoadingTimeOut: 15000,
         fragLoadingMaxRetry: 6
-      });
-
-      // When video actually starts playing, immediately reveal video and hide canvas & spinner
-      const onModalVideoPlaying = () => {
-        if (loadingSpinner) loadingSpinner.style.display = 'none';
-        videoEl.style.display = 'block';
-        videoEl.style.zIndex = '2';
-        if (canvas) canvas.style.display = 'none';
-        if (liveStatusBadge) {
-          liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE HLS STREAM`;
-          liveStatusBadge.className = 'stream-mode-badge live';
-        }
-      };
-
-      videoEl.addEventListener('playing', onModalVideoPlaying);
-      videoEl.addEventListener('loadeddata', onModalVideoPlaying);
-      videoEl.addEventListener('timeupdate', () => {
-        if (videoEl.currentTime > 0) onModalVideoPlaying();
       });
 
       activeHls.loadSource(hlsUrl);
@@ -193,8 +203,13 @@ export function openStreamModal(camera, detection = null) {
         if (data.fatal) {
           switch (data.type) {
             case HlsConstructor.ErrorTypes.NETWORK_ERROR:
-              console.warn('[HLS Modal] Network error, recovering...', data);
-              activeHls.startLoad();
+              if (data.details === HlsConstructor.ErrorDetails.MANIFEST_LOAD_ERROR || data.response?.code === 404) {
+                console.warn('[HLS Modal] Manifest 404, falling back to simulated OSD canvas');
+                fallbackToSurveillanceCanvas();
+              } else {
+                console.warn('[HLS Modal] Network error, recovering...', data);
+                activeHls.startLoad();
+              }
               break;
             case HlsConstructor.ErrorTypes.MEDIA_ERROR:
               console.warn('[HLS Modal] Media error, recovering...', data);

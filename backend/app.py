@@ -111,11 +111,21 @@ def get_cameras():
             "codec": c.get("codec") or "H.264",
             "resolution": f"{c.get('width', 1920)}x{c.get('height', 1080)}" if c.get("width") else "1920x1080",
             "fps": float(c.get("fps") or 25.0),
-            "stream_hls": f"/api/stream/{slug}/index.m3u8",
+            "stream_hls": "/api/stream/mock.mp4",
             "stream_rtsp": c.get("rtsp_url", f"rtsp://live.corp8.cloud:8554/stream/{cid}"),
             "status": "live" if c.get("width") else "degraded"
         })
     return {"total": len(results), "cameras": results}
+
+@app.get("/api/stream/mock.mp4")
+def get_mock_stream():
+    """Serves a static MP4 video file to simulate a real video feed."""
+    from fastapi.responses import FileResponse
+    video_path = os.path.join(PROJECT_ROOT, "pipeline", "sample_test_feed.mp4")
+    if not os.path.exists(video_path):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Mock video not found")
+    return FileResponse(video_path, media_type="video/mp4")
 
 @app.get("/api/detections")
 def get_detections(limit: int = Query(50, ge=1, le=200)):
