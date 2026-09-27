@@ -117,7 +117,7 @@ export class CameraMiniMap {
         this.map.invalidateSize();
         this.map.setView([lat, lng], 16.5, { animate: true });
       }
-    }, 150);
+    }, 300);
   }
 
   /**
