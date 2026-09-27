@@ -111,7 +111,7 @@ def get_cameras():
             "codec": c.get("codec") or "H.264",
             "resolution": f"{c.get('width', 1920)}x{c.get('height', 1080)}" if c.get("width") else "1920x1080",
             "fps": float(c.get("fps") or 25.0),
-            "stream_hls": f"https://cctv.corp8.cloud/{slug}/index.m3u8",
+            "stream_hls": f"/cdn/{slug}/index.m3u8",
             "stream_rtsp": c.get("rtsp_url", f"rtsp://live.corp8.cloud:8554/stream/{cid}"),
             "status": "live" if c.get("width") else "degraded"
         })

@@ -117,7 +117,7 @@ export class CameraWall {
     const statusLabel = (cam.status || 'LIVE').toUpperCase();
 
     // HLS Stream Source URL
-    const hlsSource = cam.stream_hls || cam.hls_url || `https://cctv.corp8.cloud/cam${padId}/index.m3u8`;
+    const hlsSource = cam.stream_hls || cam.hls_url || `/cdn/cam${padId}/index.m3u8`;
 
     tile.innerHTML = `
       <div class="tile-header">

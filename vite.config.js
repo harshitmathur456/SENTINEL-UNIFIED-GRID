@@ -11,6 +11,11 @@ export default defineConfig({
         changeOrigin: true,
         ws: true
       },
+      '/cdn': {
+        target: 'https://cctv.corp8.cloud',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/cdn/, '')
+      },
       '/api/health': {
         target: 'http://127.0.0.1:8080',
         changeOrigin: true
