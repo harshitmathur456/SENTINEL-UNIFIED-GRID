@@ -226,6 +226,7 @@ export function openStreamModal(camera, detection = null) {
       console.warn('[HLS] Stream init error:', e);
       fallbackToSurveillanceCanvas();
     }
+    }
   } else {
     fallbackToSurveillanceCanvas();
   }
