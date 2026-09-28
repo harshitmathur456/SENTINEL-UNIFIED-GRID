@@ -48,14 +48,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const sentinelMap = new SentinelMap('gis-map');
 
   // 2. Initialize Route Replay Controller
-  const replayController = new RouteReplayController((detection, index, allDetections) => {
+  const replayController = new RouteReplayController((detection, index, allDetections, vehicle, isFinished) => {
+    if (isFinished) {
+      sentinelMap.fitRouteBounds();
+      return;
+    }
+
+    if (!detection) return;
+    const targetVeh = vehicle || currentActiveVehicle;
     const cam = CAMERAS.find(c => c.id === detection.camera_id);
     if (cam) {
-      sentinelMap.panToWaypoint(cam.lat, cam.lng, 15);
+      sentinelMap.setReplayVehicleMarker(
+        cam.lat,
+        cam.lng,
+        index + 1,
+        allDetections ? allDetections.length : 1,
+        targetVeh ? targetVeh.plate_number : 'TARGET',
+        detection.speed_est_kmh || 40,
+        cam.name + ' — ' + cam.location_text
+      );
     }
     // Update CCTV evidence preview card to this hop
-    if (currentActiveVehicle) {
-      updateCCTVEvidenceCard(currentActiveVehicle, index);
+    if (targetVeh) {
+      updateCCTVEvidenceCard(targetVeh, index);
     }
     // Highlight timeline item
     document.querySelectorAll('.timeline-item').forEach((el, idx) => {
@@ -188,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="color: #fff; font-weight: 600; font-size: 14px;">No Record Found for "<strong>${queryText}</strong>"</p>
           <p style="font-size: 12px; margin-top: 6px;">Vehicle has not been sighted on any of the 30 Gujarat CCTV grid cameras.</p>
           <div style="margin-top: 12px; font-size: 11px; color: var(--accent-cyan);">
-            Try genuine ANPR captured vehicles: <strong>JANPATH</strong>, <strong>CS1TMS</strong>, <strong>CH1MAN</strong>, or <strong>PT22</strong>
+            Try genuine Gujarat ANPR tracked vehicles: <strong>GJ01ER4892</strong>, <strong>GJ01BN7104</strong>, <strong>GJ27AK3195</strong>, or <strong>GJ01CZ6240</strong>
           </div>
         </div>
       `;
@@ -333,7 +348,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnReplayTrigger = document.getElementById('btn-replay-trigger');
     if (btnReplayTrigger) {
       btnReplayTrigger.addEventListener('click', () => {
-        replayController.play();
+        if (typeof switchView === 'function') switchView('map');
+        if (replayController.isPlaying) {
+          replayController.pause();
+        } else {
+          replayController.play();
+        }
       });
     }
 

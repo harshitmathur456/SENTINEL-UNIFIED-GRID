@@ -6,6 +6,7 @@
 export class RouteReplayController {
   constructor(onStepCallback) {
     this.onStepCallback = onStepCallback;
+    this.vehicle = null;
     this.detections = [];
     this.currentIndex = 0;
     this.isPlaying = false;
@@ -31,11 +32,17 @@ export class RouteReplayController {
     }
 
     if (this.btnPrev) {
-      this.btnPrev.addEventListener('click', () => this.stepTo(this.currentIndex - 1));
+      this.btnPrev.addEventListener('click', () => {
+        this.pause();
+        this.stepTo(this.currentIndex - 1);
+      });
     }
 
     if (this.btnNext) {
-      this.btnNext.addEventListener('click', () => this.stepTo(this.currentIndex + 1));
+      this.btnNext.addEventListener('click', () => {
+        this.pause();
+        this.stepTo(this.currentIndex + 1);
+      });
     }
 
     if (this.btnSpeed) {
@@ -52,7 +59,8 @@ export class RouteReplayController {
 
   loadRoute(vehicle) {
     this.pause();
-    this.detections = vehicle.detections || [];
+    this.vehicle = vehicle;
+    this.detections = (vehicle && vehicle.detections) || [];
     this.currentIndex = 0;
 
     if (this.detections.length === 0) {
@@ -96,7 +104,7 @@ export class RouteReplayController {
   }
 
   play() {
-    if (this.detections.length === 0) return;
+    if (!this.detections || this.detections.length === 0) return;
 
     if (this.currentIndex >= this.detections.length - 1) {
       this.currentIndex = 0;
@@ -108,6 +116,15 @@ export class RouteReplayController {
       this.btnPlay.title = "Pause Replay";
     }
 
+    // Update trigger button in sidebar if present
+    const btnTrigger = document.getElementById('btn-replay-trigger');
+    if (btnTrigger) {
+      btnTrigger.innerHTML = `<i class="fas fa-pause-circle"></i> Pause Replay (Hop ${this.currentIndex + 1}/${this.detections.length})`;
+      btnTrigger.classList.add('playing');
+    }
+
+    // Immediately execute current step
+    this.stepTo(this.currentIndex);
     this.scheduleNextStep();
   }
 
@@ -117,6 +134,12 @@ export class RouteReplayController {
     if (this.btnPlay) {
       this.btnPlay.innerHTML = '<i class="fas fa-play"></i>';
       this.btnPlay.title = "Play Replay";
+    }
+
+    const btnTrigger = document.getElementById('btn-replay-trigger');
+    if (btnTrigger && this.detections) {
+      btnTrigger.innerHTML = `<i class="fas fa-play-circle"></i> Resume Replay (Hop ${this.currentIndex + 1}/${this.detections.length})`;
+      btnTrigger.classList.remove('playing');
     }
   }
 
@@ -142,7 +165,7 @@ export class RouteReplayController {
   scheduleNextStep() {
     if (!this.isPlaying) return;
 
-    const baseDelayMs = 2400;
+    const baseDelayMs = 2000;
     const interval = baseDelayMs / this.speedMultiplier;
 
     this.timer = setTimeout(() => {
@@ -150,7 +173,26 @@ export class RouteReplayController {
         this.stepTo(this.currentIndex + 1);
         this.scheduleNextStep();
       } else {
-        this.pause();
+        // Replay completed
+        this.isPlaying = false;
+        clearTimeout(this.timer);
+        if (this.btnPlay) {
+          this.btnPlay.innerHTML = '<i class="fas fa-rotate-right"></i>';
+          this.btnPlay.title = "Replay Route Again";
+        }
+        if (this.statusText) {
+          this.statusText.innerHTML = `<i class="fas fa-circle-check" style="color:var(--accent-emerald);"></i> Corridor Replay Complete &bull; All ${this.detections.length} Hops Traced`;
+        }
+        const btnTrigger = document.getElementById('btn-replay-trigger');
+        if (btnTrigger) {
+          btnTrigger.innerHTML = `<i class="fas fa-rotate-right"></i> Replay Route (${this.detections.length} Hops)`;
+          btnTrigger.classList.remove('playing');
+        }
+
+        // Notify that replay completed so map can display full overview
+        if (typeof this.onStepCallback === 'function') {
+          this.onStepCallback(null, this.currentIndex, this.detections, this.vehicle, true);
+        }
       }
     }, interval);
   }
@@ -166,15 +208,20 @@ export class RouteReplayController {
     }
 
     if (this.statusText) {
-      this.statusText.textContent = `Hop ${this.currentIndex + 1} of ${this.detections.length}: ${currentDet.location_name}`;
+      this.statusText.innerHTML = `<i class="fas fa-satellite-dish" style="color:var(--accent-cyan); animation:pulseBeacon 1.5s infinite;"></i> Hop ${this.currentIndex + 1} of ${this.detections.length}: ${currentDet.location_name}`;
     }
 
     if (this.timeLabel) {
       this.timeLabel.textContent = currentDet.timestamp_utc.replace(' UTC', '');
     }
 
+    const btnTrigger = document.getElementById('btn-replay-trigger');
+    if (btnTrigger && this.isPlaying) {
+      btnTrigger.innerHTML = `<i class="fas fa-satellite fa-spin"></i> Replaying Hop ${this.currentIndex + 1}/${this.detections.length}...`;
+    }
+
     if (typeof this.onStepCallback === 'function') {
-      this.onStepCallback(currentDet, this.currentIndex, this.detections);
+      this.onStepCallback(currentDet, this.currentIndex, this.detections, this.vehicle, false);
     }
   }
 }

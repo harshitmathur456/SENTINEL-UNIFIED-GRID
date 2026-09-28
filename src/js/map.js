@@ -21,6 +21,9 @@ export class SentinelMap {
     this.stationLayer = L.layerGroup();
     this.routePolylineLayer = L.layerGroup();
     this.routeWaypointLayer = L.layerGroup();
+    this.routeVehicleLayer = L.layerGroup();
+    this.replayVehicleMarker = null;
+    this.activeRouteLatLngs = [];
     this.gapAnalysisLayer = L.layerGroup();
     this.gujaratBoundaryLayer = L.layerGroup();
     this.gujaratMaskLayer = L.layerGroup();
@@ -82,6 +85,7 @@ export class SentinelMap {
     this.stationLayer.addTo(this.map);
     this.routePolylineLayer.addTo(this.map);
     this.routeWaypointLayer.addTo(this.map);
+    this.routeVehicleLayer.addTo(this.map);
 
     // Render Gujarat Borders and Inverse Mask
     this.renderGujaratBoundaryAndMask();
@@ -422,14 +426,63 @@ export class SentinelMap {
     });
 
     // Fit map bounds to route with a smooth camera movement
+    this.activeRouteLatLngs = latLngs;
     const bounds = L.latLngBounds(latLngs);
     this.map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
+  }
+
+  clearRoute() {
+    this.routePolylineLayer.clearLayers();
+    this.routeWaypointLayer.clearLayers();
+    this.routeVehicleLayer.clearLayers();
+    this.replayVehicleMarker = null;
+    this.activeVehicleRoute = null;
+    this.activeRouteLatLngs = [];
+  }
+
+  setReplayVehicleMarker(lat, lng, hopNumber, totalHops, plateNumber, speedKmh, locationName) {
+    this.routeVehicleLayer.clearLayers();
+
+    const icon = L.divIcon({
+      html: `
+        <div class="custom-replay-vehicle-pin">
+          <div class="vehicle-sonar-ring"></div>
+          <div class="vehicle-sonar-ring-2"></div>
+          <div class="vehicle-core-icon">
+            <i class="fas fa-car-side"></i>
+          </div>
+          <div class="vehicle-floating-tag">
+            <span class="v-tag-plate">${plateNumber}</span>
+            <span class="v-tag-speed">${speedKmh} km/h</span>
+          </div>
+        </div>
+      `,
+      className: '',
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
+    });
+
+    this.replayVehicleMarker = L.marker([lat, lng], { icon, zIndexOffset: 2500 });
+    this.routeVehicleLayer.addLayer(this.replayVehicleMarker);
+
+    // Pan map to follow vehicle smoothly
+    this.map.flyTo([lat, lng], 15, {
+      animate: true,
+      duration: 1.0
+    });
+  }
+
+  fitRouteBounds() {
+    if (this.activeRouteLatLngs && this.activeRouteLatLngs.length > 0) {
+      const bounds = L.latLngBounds(this.activeRouteLatLngs);
+      this.map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14, animate: true });
+    }
   }
 
   panToWaypoint(lat, lng, zoomLevel = 15) {
     this.map.flyTo([lat, lng], zoomLevel, {
       animate: true,
-      duration: 1.2
+      duration: 1.0
     });
   }
 

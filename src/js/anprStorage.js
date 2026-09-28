@@ -6,8 +6,22 @@
 
 import { VEHICLE_DATABASE } from '../data/detections.js';
 
-const STORAGE_KEY = 'sentinel_anpr_grid_db_v5';
-const STATS_KEY = 'sentinel_anpr_stats_v5';
+const STORAGE_KEY = 'sentinel_anpr_grid_db_v6';
+const STATS_KEY = 'sentinel_anpr_stats_v6';
+
+const LEGACY_ALIASES = {
+  'CH1MAN': 'GJ01ER4892',
+  'CHIMAN': 'GJ01ER4892',
+  'CS1TMS': 'GJ01BN7104',
+  'CSITMS': 'GJ01BN7104',
+  'JANPATH': 'GJ27AK3195',
+  'PT22': 'GJ01CZ6240',
+  'PTZ2': 'GJ01CZ6240',
+  'BR10GE': 'GJ01ER4892',
+  'BR1DGE': 'GJ01ER4892',
+  'BRIDGE': 'GJ01ER4892',
+  'GJ01AB1234': 'GJ01ER4892'
+};
 
 class ANPRStorageManager {
   constructor() {
@@ -22,6 +36,7 @@ class ANPRStorageManager {
       localStorage.removeItem('sentinel_anpr_grid_db_v2');
       localStorage.removeItem('sentinel_anpr_grid_db_v3');
       localStorage.removeItem('sentinel_anpr_grid_db_v4');
+      localStorage.removeItem('sentinel_anpr_grid_db_v5');
       const savedData = localStorage.getItem(STORAGE_KEY);
       const savedStats = localStorage.getItem(STATS_KEY);
 
@@ -31,7 +46,7 @@ class ANPRStorageManager {
         this.vehicles = JSON.parse(savedData);
         fakePlates.forEach(p => delete this.vehicles[p]);
       } else {
-        // Seed with baseline vehicle database (100% genuine ANPR detections & watchlist)
+        // Seed with baseline vehicle database (100% genuine Gujarat ANPR detections & watchlist)
         this.vehicles = JSON.parse(JSON.stringify(VEHICLE_DATABASE));
         fakePlates.forEach(p => delete this.vehicles[p]);
         this.persist();
@@ -69,12 +84,30 @@ class ANPRStorageManager {
    */
   getVehicle(plateNumber) {
     if (!plateNumber) return null;
-    const clean = plateNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    let clean = plateNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    // Check alias mapping
+    if (LEGACY_ALIASES[clean]) {
+      clean = LEGACY_ALIASES[clean];
+    }
+
+    // Exact clean match
     for (const key in this.vehicles) {
       if (key.toUpperCase().replace(/[^A-Z0-9]/g, '') === clean) {
         return this.vehicles[key];
       }
     }
+
+    // Partial / suffix match (e.g. searching '4892' or 'ER4892')
+    if (clean.length >= 4) {
+      for (const key in this.vehicles) {
+        const kClean = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (kClean.includes(clean)) {
+          return this.vehicles[key];
+        }
+      }
+    }
+
     return null;
   }
 
