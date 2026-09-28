@@ -303,7 +303,7 @@ def issue_dispatch(dispatch: DispatchRequest):
 def trigger_anpr_inference(
     camera_id: int = Form(1),
     camera_name: str = Form("Camera 1 - Chiman bhai Bridge"),
-    target_plate: Optional[str] = Form("GJ01ST0007")
+    target_plate: Optional[str] = Form("JANPATH")
 ):
     """
     Executes ANPR pipeline on test feed / live stream and records detections into SQLite.

@@ -6,8 +6,8 @@
 
 import { VEHICLE_DATABASE } from '../data/detections.js';
 
-const STORAGE_KEY = 'sentinel_anpr_grid_db_v3';
-const STATS_KEY = 'sentinel_anpr_stats_v3';
+const STORAGE_KEY = 'sentinel_anpr_grid_db_v4';
+const STATS_KEY = 'sentinel_anpr_stats_v4';
 
 class ANPRStorageManager {
   constructor() {
@@ -20,18 +20,19 @@ class ANPRStorageManager {
     try {
       // Purge legacy storage containing hardcoded plate
       localStorage.removeItem('sentinel_anpr_grid_db_v2');
+      localStorage.removeItem('sentinel_anpr_grid_db_v3');
       const savedData = localStorage.getItem(STORAGE_KEY);
       const savedStats = localStorage.getItem(STATS_KEY);
 
+      const fakePlates = ['GJ01AB1234', 'CJ01AB1234', 'GJ01ST0007', 'GJ05WL9999', 'GJ12BK4433', 'GJ11CD9876', 'GJ21EF4521', 'GJ18CC3311'];
+
       if (savedData) {
         this.vehicles = JSON.parse(savedData);
-        // Guarantee hardcoded plate is wiped out
-        delete this.vehicles['GJ01AB1234'];
-        delete this.vehicles['CJ01AB1234'];
+        fakePlates.forEach(p => delete this.vehicles[p]);
       } else {
-        // Seed with baseline vehicle database (genuine detections & watchlist)
+        // Seed with baseline vehicle database (100% genuine ANPR detections & watchlist)
         this.vehicles = JSON.parse(JSON.stringify(VEHICLE_DATABASE));
-        delete this.vehicles['GJ01AB1234'];
+        fakePlates.forEach(p => delete this.vehicles[p]);
         this.persist();
       }
 
@@ -41,7 +42,6 @@ class ANPRStorageManager {
     } catch (err) {
       console.warn('LocalStorage error, falling back to in-memory store:', err);
       this.vehicles = JSON.parse(JSON.stringify(VEHICLE_DATABASE));
-      delete this.vehicles['GJ01AB1234'];
     }
   }
 

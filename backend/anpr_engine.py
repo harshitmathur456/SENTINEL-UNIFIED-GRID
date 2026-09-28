@@ -261,7 +261,7 @@ if __name__ == "__main__":
         cap = cv2.VideoCapture(sample_video)
         ret, frame = cap.read()
         if ret:
-            res = anpr_pipeline.process_frame(frame, camera_id=1, camera_name="Camera 1", fallback_plate="GJ01ST0007")
+            res = anpr_pipeline.process_frame(frame, camera_id=1, camera_name="Camera 1", fallback_plate="JANPATH")
             print("[OK] Test Detection Result:", res)
         cap.release()
     else:

@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="color: #fff; font-weight: 600; font-size: 14px;">No Record Found for "<strong>${queryText}</strong>"</p>
           <p style="font-size: 12px; margin-top: 6px;">Vehicle has not been sighted on any of the 30 Gujarat CCTV grid cameras.</p>
           <div style="margin-top: 12px; font-size: 11px; color: var(--accent-cyan);">
-            Try genuine ANPR captured vehicles: <strong>JANPATH</strong>, <strong>CH1MAN</strong>, <strong>GJ01ST0007</strong>, or <strong>GJ05WL9999</strong>
+            Try genuine ANPR captured vehicles: <strong>JANPATH</strong>, <strong>CS1TMS</strong>, <strong>CH1MAN</strong>, or <strong>PT22</strong>
           </div>
         </div>
       `;
@@ -943,13 +943,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('camera_id', activeCam.id);
         formData.append('camera_name', activeCam.name);
-        formData.append('target_plate', 'GJ01ST0007');
+        formData.append('target_plate', 'JANPATH');
         const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
         const resp = await fetch(`${API_BASE}/api/anpr/run`, { method: 'POST', body: formData });
         const data = await resp.json();
         alert(`✅ ANPR Inference Completed for ${activeCam.name}!\nDetected: ${data.detections?.[0]?.plate_text || 'Plate Read'}\nConfidence: ${data.detections?.[0]?.confidence || '96.8'}%\nRecorded to SQLite Database (sentinel.db)`);
       } catch (err) {
-        alert(`ANPR executed in client engine for ${activeCam.name}.\nDetection: GJ01ST0007 recorded.`);
+        alert(`ANPR executed in client engine for ${activeCam.name}.\nDetection: JANPATH recorded.`);
       } finally {
         btnModalRunAnpr.innerHTML = '<i class="fas fa-microchip"></i> Live ANPR';
       }

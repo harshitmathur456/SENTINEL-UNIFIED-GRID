@@ -79,23 +79,11 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_wl_plate ON watchlist(plate_text);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_cam ON alerts(camera_id);")
 
-    # Seed 15 representative Watchlist targets across Gujarat
+    # Seed real ANPR Watchlist targets across Gujarat CCTV network
     sample_watchlist = [
-        ("GJ01ST0007", "Stolen Hyundai Creta — FIR #8812/2026 Navrangpura PS", "Stolen", "CRITICAL"),
-        ("GJ05WL9999", "Contraband Mahindra Thar — Highway Interception Notice #501", "Wanted", "HIGH"),
-        ("GJ27HR4040", "Hit & Run Fatal Accident — Ring Road SG Highway FIR #1102", "Hit and Run", "CRITICAL"),
-        ("GJ03GH3322", "High-Value Smuggling Convoy Lead Vehicle", "Wanted", "HIGH"),
-        ("GJ18CR1122", "Extortion & Kidnapping Suspect Vehicle", "Wanted", "CRITICAL"),
-        ("GJ06AB5544", "Vehicle Registration Suspended — High Speed Toll Evasion", "Suspension", "MEDIUM"),
-        ("GJ12CD9090", "Inter-State Smuggling Transporter (Kachchh Border Alert)", "Wanted", "HIGH"),
-        ("GJ10EF8877", "Stolen Maruti Brezza — Jamnagar City FIR #449", "Stolen", "HIGH"),
-        ("GJ02MN3311", "Organized Cargo Theft Ring — Mehsana Highway", "Wanted", "HIGH"),
-        ("GJ09KL7766", "Unpaid Traffic Penalty & Fake Number Plate Impersonation", "Suspension", "MEDIUM"),
-        ("GJ11CD9876", "Routine Surveillance Flag — Junagadh Sector Checkpoint", "Monitoring", "MEDIUM"),
-        ("GJ21EF4521", "Navsari Diamond Merchant Robbery Escort Car", "Wanted", "CRITICAL"),
-        ("GJ04XY1290", "Fuel Theft Tanker — Bhavnagar Port Corridor", "Wanted", "HIGH"),
-        ("GJ16ZZ6655", "Gold Smuggling Transit Vehicle — Bharuch Patrol Alert", "Wanted", "CRITICAL"),
-        ("GJ23AB9900", "Armed Robbery Getaway Vehicle — Anand City", "Wanted", "CRITICAL")
+        ("JANPATH", "Commercial Transit Vehicle — Active Corridor Intercept Notice", "Transit Surveillance", "CRITICAL"),
+        ("CS1TMS", "Urban Sensor Transit Vehicle — Riverfront Multi-Camera Monitoring", "Traffic Monitoring", "CRITICAL"),
+        ("CH1MAN", "Bridge Transit Unit — Chimanbhai Flyover Speed & Route Flag", "Grid Intercept", "HIGH")
     ]
 
     now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")

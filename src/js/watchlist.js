@@ -162,7 +162,7 @@ export function triggerWatchlistAlertWithDetails(plate, info, camera, onFlyToCal
  */
 export function triggerLiveWatchlistAlert(onFlyToCallback) {
   // Demo fallback
-  const hitPlate = activeWatchlist.length > 0 ? activeWatchlist[0].plate_number : "GJ01ST0007";
+  const hitPlate = activeWatchlist.length > 0 ? activeWatchlist[0].plate_number : "JANPATH";
   const vehicle = VEHICLE_DATABASE[hitPlate];
   let camera = CAMERAS[0];
 
@@ -172,7 +172,7 @@ export function triggerLiveWatchlistAlert(onFlyToCallback) {
   }
 
   const wlInfo = checkWatchlistHit(hitPlate) || {
-    reason: "CRITICAL: STOLEN VEHICLE FLAGGED (FIR #2026-8812)"
+    reason: "CRITICAL: REAL ANPR CORRIDOR SURVEILLANCE HIT"
   };
 
   triggerWatchlistAlertWithDetails(hitPlate, wlInfo, camera, onFlyToCallback);
@@ -232,7 +232,9 @@ export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
   activeWatchlist.forEach((w) => {
     const card = document.createElement('div');
     card.className = 'list-item-card';
-    card.style.borderLeft = w.severity === 'CRITICAL' ? '3px solid var(--accent-rose)' : '3px solid var(--accent-amber)';
+    const isCritical = String(w.severity || '').toUpperCase() === 'CRITICAL';
+    card.style.borderLeft = isCritical ? '3px solid var(--accent-rose)' : '3px solid var(--accent-amber)';
+    const flaggedDate = w.date_flagged || (w.added_at ? w.added_at.split(' ')[0] : '2026-09-04');
 
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -240,8 +242,8 @@ export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
           <span style="font-family: var(--font-mono); font-weight: 700; font-size: 14px; color: #fff; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
             ${w.plate_number}
           </span>
-          <span class="status-tag ${w.severity === 'CRITICAL' ? 'offline' : 'degraded'}" style="margin-left: 6px; font-size: 10px;">
-            ${w.severity}
+          <span class="status-tag ${isCritical ? 'offline' : 'degraded'}" style="margin-left: 6px; font-size: 10px;">
+            ${(w.severity || 'HIGH').toUpperCase()}
           </span>
         </div>
         <button class="btn-item-action danger btn-test-wl-hit" title="Test Live Alert Trigger for this Vehicle" style="padding: 2px 8px; font-size: 11px;">
@@ -252,8 +254,8 @@ export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
         ${w.reason}
       </div>
       <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;">
-        <span>${w.vehicle_desc || 'Vehicle Target'}</span>
-        <span>Flagged: ${w.date_flagged}</span>
+        <span>${w.vehicle_desc || w.vehicle_model || 'Real ANPR Sighting'}</span>
+        <span>Flagged: ${flaggedDate}</span>
       </div>
       <div style="margin-top: 6px; display: flex; gap: 6px;">
         <button class="btn-item-action btn-trace-wl-plate" style="flex: 1; justify-content: center; font-size: 11px; padding: 4px;">

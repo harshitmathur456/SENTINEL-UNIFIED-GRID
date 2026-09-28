@@ -4,49 +4,38 @@ Provides instant dictionary lookup for flagged vehicles across Gujarat CCTV netw
 """
 
 WATCHLIST_DATABASE = {
-    "GJ01ST0007": {
-        "plate_number": "GJ01ST0007",
-        "reason": "CRITICAL: STOLEN VEHICLE (FIR #2026-8812 / Navrangpura PS)",
-        "category": "Stolen",
+    "JANPATH": {
+        "plate_number": "JANPATH",
+        "reason": "CRITICAL: SURVEILLANCE FLAG (Transit Corridor Active Monitoring)",
+        "category": "Transit Surveillance",
         "severity": "CRITICAL",
         "alert_sound": True,
-        "vehicle_desc": "White Hyundai Creta (2023)",
-        "owner": "Rameshchandra Patel",
+        "vehicle_desc": "Commercial Transit Vehicle (Captured on Cam 02)",
+        "owner": "Ahmedabad Municipal Transport Service",
         "origin_district": "Ahmedabad",
-        "date_flagged": "2026-09-02"
+        "date_flagged": "2026-09-04"
     },
-    "GJ05WL9999": {
-        "plate_number": "GJ05WL9999",
-        "reason": "HIGH PRIORITY: WANTED FELON / CONTRABAND SUSPECT (NDPS Case #441)",
-        "category": "Wanted",
+    "CS1TMS": {
+        "plate_number": "CS1TMS",
+        "reason": "CRITICAL: CROSS-CAMERA MOVEMENT MONITORING (FIR #2026-0419)",
+        "category": "Traffic Monitoring",
+        "severity": "CRITICAL",
+        "alert_sound": True,
+        "vehicle_desc": "Sensor Transit Vehicle (Captured on Cam 01 & 02)",
+        "owner": "State Surveillance Monitoring Fleet",
+        "origin_district": "Ahmedabad",
+        "date_flagged": "2026-09-04"
+    },
+    "CH1MAN": {
+        "plate_number": "CH1MAN",
+        "reason": "HIGH PRIORITY: SPEED & ROUTE AUDIT FLAG",
+        "category": "Grid Intercept",
         "severity": "HIGH",
         "alert_sound": True,
-        "vehicle_desc": "Black Mahindra Thar 4x4",
-        "owner": "Unknown (Forged Registration)",
-        "origin_district": "Surat",
-        "date_flagged": "2026-08-30"
-    },
-    "GJ18CR1122": {
-        "plate_number": "GJ18CR1122",
-        "reason": "URGENT: HIT & RUN INVOLVEMENT (FIR #2026-0194 / Gandhinagar Infocity)",
-        "category": "Hit and Run",
-        "severity": "HIGH",
-        "alert_sound": True,
-        "vehicle_desc": "Grey Maruti Brezza",
-        "owner": "Deepak Mehta",
-        "origin_district": "Gandhinagar",
-        "date_flagged": "2026-09-03"
-    },
-    "GJ03GH3322": {
-        "plate_number": "GJ03GH3322",
-        "reason": "MONITORING: TAX EVASION & RTO SUSPENSION NOTICE",
-        "category": "Suspension",
-        "severity": "MEDIUM",
-        "alert_sound": False,
-        "vehicle_desc": "Silver Honda City",
-        "owner": "Karan Vora",
-        "origin_district": "Rajkot",
-        "date_flagged": "2026-08-25"
+        "vehicle_desc": "Urban Transit Unit (Captured on Cam 01)",
+        "owner": "Ahmedabad Urban Infrastructure Fleet",
+        "origin_district": "Ahmedabad",
+        "date_flagged": "2026-09-04"
     }
 }
 

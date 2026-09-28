@@ -108,7 +108,7 @@
               <div class="search-box-wrapper">
                 <div class="search-input-group">
                   <i class="fas fa-search search-icon"></i>
-                  <input type="text" id="anpr-search-input" class="anpr-search-input" placeholder="Enter Registration No. (e.g. JANPATH, GJ01ST0007)" value="" autocomplete="off">
+                  <input type="text" id="anpr-search-input" class="anpr-search-input" placeholder="Enter Registration No. (e.g. JANPATH, CS1TMS)" value="" autocomplete="off">
                   <button id="btn-search-anpr" class="btn-search-exec">TRACE</button>
                 </div>
                 <div id="anpr-suggestions-list" class="anpr-suggestions-list" style="display: none;"></div>
@@ -120,11 +120,10 @@
                 </div>
                 <div class="quick-pick-chips">
                   <button class="chip-vehicle" data-plate="JANPATH" title="Live ANPR Capture - 02 Janpath Feed">JANPATH (Live Cam 02)</button>
+                  <button class="chip-vehicle" data-plate="CS1TMS" title="Live ANPR Capture - Multi-Cam 01 & 02">CS1TMS (Multi-Cam 01/02)</button>
                   <button class="chip-vehicle" data-plate="CH1MAN" title="Live ANPR Capture - 01 Chiman bhai Bridge Feed">CH1MAN (Live Cam 01)</button>
-                  <button class="chip-vehicle" data-plate="GJ01ST0007" title="Watchlist Target - Stolen Honda City (FIR #2026-8812)">GJ01ST0007 (Watchlist City)</button>
-                  <button class="chip-vehicle" data-plate="GJ05WL9999" title="Watchlist Target - Contraband Thar (3 Cameras)">GJ05WL9999 (Watchlist Thar)</button>
-                  <button class="chip-vehicle" data-plate="GJ11CD9876" title="Junagadh Sector Route (5 Cameras)">GJ11CD9876 (Junagadh)</button>
-                  <button class="chip-vehicle" data-plate="GJ21EF4521" title="Navsari & Bilimora Highway (7 Cameras)">GJ21EF4521 (Navsari)</button>
+                  <button class="chip-vehicle" data-plate="PT22" title="Live ANPR Capture - 02 Janpath Feed">PT22 (Live Cam 02)</button>
+                  <button class="chip-vehicle" data-plate="BR10GE" title="Live ANPR Capture - 01 Chiman bhai Bridge Feed">BR10GE (Live Cam 01)</button>
                 </div>
 
                 <!-- Custom Test Video Ingestion & Forensic Export Actions -->
@@ -215,7 +214,7 @@
                 <span class="hud-badge" style="background: rgba(244, 63, 94, 0.2); color: #fda4af;">NEW TARGET</span>
               </div>
               <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-                <input type="text" id="new-wl-plate" class="filter-input" placeholder="Plate No. (e.g. GJ01ST0007, GJ18CR1122)" autocomplete="off">
+                <input type="text" id="new-wl-plate" class="filter-input" placeholder="Plate No. (e.g. JANPATH, CS1TMS)" autocomplete="off">
                 <input type="text" id="new-wl-reason" class="filter-input" placeholder="Offense / FIR / Reason for flag" autocomplete="off">
                 <div style="display: flex; gap: 6px;">
                   <select id="new-wl-category" class="filter-select" style="flex: 1;">
@@ -606,10 +605,10 @@
       </div>
       <div>
         <div style="font-size: 18px; font-weight: 800; font-family: var(--font-mono); color: #fff; background: #000; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--accent-rose); display: inline-block;">
-          <span id="alert-plate-number">GJ01ST0007</span>
+          <span id="alert-plate-number">JANPATH</span>
         </div>
         <div id="alert-reason" style="font-size: 12px; color: #fca5a5; margin-top: 6px; font-weight: 600;">
-          CRITICAL: STOLEN VEHICLE FLAGGED (FIR #2026-8812)
+          CRITICAL: REAL-TIME ANPR INTERCEPT ALERT
         </div>
       </div>
       <div style="background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px; font-size: 11px; display: flex; flex-direction: column; gap: 4px;">

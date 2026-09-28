@@ -94,7 +94,7 @@ export class VideoANPRModal {
 
   startDetectionLoop() {
     let frameCount = 0;
-    const testPlates = ["JANPATH", "CH1MAN", "GJ01ST0007", "GJ05WL9999", "GJ11CD9876", "GJ21EF4521"];
+    const testPlates = ["JANPATH", "CS1TMS", "CH1MAN", "PT22", "BR10GE"];
     // Choose plate based on video or genuine ANPR set
     const activePlate = testPlates[Math.floor(Math.random() * testPlates.length)];
     this.detectedPlate = activePlate;
