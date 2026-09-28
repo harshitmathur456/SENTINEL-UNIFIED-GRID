@@ -33,7 +33,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!feeds|data|assets|api|favicon).*)",
       "destination": "/index.html"
     }
   ]
