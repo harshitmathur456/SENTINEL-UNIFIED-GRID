@@ -33,7 +33,6 @@ __pycache__/
 *.swp
 *.swo
 .DS_Store
-password.txt
 .env
 .env.*
 *.env
