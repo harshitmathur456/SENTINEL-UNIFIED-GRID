@@ -136,10 +136,10 @@ export class CameraWall {
 
       <div class="tile-video-viewport">
         <!-- Live Video Element for HLS Playback -->
-        <video class="tile-video-el" id="wall-video-${cam.id}" autoplay muted playsinline loop style="display: none;"></video>
+        <video class="tile-video-el" id="wall-video-${cam.id}" autoplay muted playsinline loop></video>
         
-        <!-- Synthetic Surveillance Radar Canvas Fallback -->
-        <canvas class="tile-canvas-preview" id="wall-canvas-${cam.id}" width="400" height="225"></canvas>
+        <!-- Synthetic Surveillance Radar Canvas Fallback (shows until video loads) -->
+        <canvas class="tile-canvas-preview" id="wall-canvas-${cam.id}" width="400" height="225" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"></canvas>
         
         <div class="tile-crt-scanlines"></div>
         
@@ -229,7 +229,7 @@ export class CameraWall {
     };
     setInterval(updateClock, 100);
 
-    // Render initial surveillance frame while live HLS stream connects
+    // Render initial surveillance canvas overlay while video loads
     if (canvas) {
       anprEngine.renderSurveillanceFrame(canvas, cam, null, true);
     }
@@ -238,32 +238,67 @@ export class CameraWall {
     const padId = String(cam.id).padStart(2, '0');
     const cdnFeedSource = `/feeds/cam${padId}.mp4`;
 
+    // When video is playing — hide canvas overlay, show video beneath and update status pill to LIVE
     const revealLiveVideo = () => {
-      videoEl.style.display = 'block';
+      if (canvas) {
+        canvas.style.display = 'none';
+        canvas.style.zIndex = '0';
+      }
       videoEl.style.zIndex = '2';
-      if (canvas) canvas.style.display = 'none';
+
+      // Reassure operator that the live stream is active
+      const statusPill = tile.querySelector('.status-indicator-pill');
+      if (statusPill && !statusPill.classList.contains('live')) {
+        statusPill.className = 'status-indicator-pill live';
+        statusPill.innerHTML = `<span class="pulse-dot"></span>LIVE`;
+      }
+      tile.classList.remove('degraded');
+      tile.classList.add('live');
     };
 
-    videoEl.addEventListener('playing', revealLiveVideo);
-    videoEl.addEventListener('loadeddata', revealLiveVideo);
-    videoEl.addEventListener('canplay', revealLiveVideo);
+    videoEl.addEventListener('playing', revealLiveVideo, { once: true });
+    videoEl.addEventListener('canplay', revealLiveVideo, { once: true });
+    videoEl.addEventListener('loadeddata', revealLiveVideo, { once: true });
+    videoEl.addEventListener('timeupdate', () => {
+      if (videoEl.currentTime > 0) revealLiveVideo();
+    }, { once: true });
 
-    videoEl.src = cdnFeedSource;
+    // Handle video errors — keep canvas visible as fallback
+    videoEl.addEventListener('error', () => {
+      if (canvas) canvas.style.display = 'block';
+    });
+
+    videoEl.defaultMuted = true;
     videoEl.muted = true;
     videoEl.loop = true;
     videoEl.playsInline = true;
+    videoEl.setAttribute('playsinline', '');
+    videoEl.setAttribute('webkit-playsinline', '');
+    videoEl.setAttribute('muted', '');
+    videoEl.src = cdnFeedSource;
 
-    // Immediate playback for fast availability on Vercel
-    const playPromise = videoEl.play();
-    if (playPromise !== undefined) {
-      playPromise.then(revealLiveVideo).catch(() => {
-        const resumeOnUser = () => {
-          videoEl.play().then(revealLiveVideo).catch(() => {});
-        };
-        window.addEventListener('click', resumeOnUser, { once: true });
-        window.addEventListener('touchstart', resumeOnUser, { once: true });
-      });
+    if (videoEl.readyState >= 2) {
+      revealLiveVideo();
     }
+
+    // Attempt autoplay — muted video is allowed by modern browsers
+    const tryPlay = () => {
+      const p = videoEl.play();
+      if (p !== undefined) {
+        p.then(revealLiveVideo).catch(() => {
+          // Retry on first user interaction if autoplay was restricted
+          const resumeOnUser = () => {
+            videoEl.play().then(revealLiveVideo).catch(() => {});
+          };
+          window.addEventListener('click', resumeOnUser, { once: true });
+          window.addEventListener('pointerdown', resumeOnUser, { once: true });
+          window.addEventListener('scroll', resumeOnUser, { once: true });
+        });
+      }
+    };
+
+    // Small delay per tile to avoid flooding network simultaneously
+    setTimeout(tryPlay, index * 60);
   }
 }
 
