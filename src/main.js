@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div class="vehicle-route-banner">
           <div style="font-size: 12px; font-weight: 700; color: ${isWatchlist ? '#fca5a5' : '#93c5fd'}; display: flex; align-items: center; gap: 6px;">
-            <i class="fas fa-route"></i> Found on ${v.detections.length} Cameras across ${districtText}
+            <i class="fas fa-route"></i> Found on ${stats.uniqueCamerasCount || v.detections.length} Cameras across ${districtText}
           </div>
           <div class="route-stats-pill-row">
             <span class="route-stat-pill">Transit Distance: <strong>${stats.totalDistanceKm || 0} km</strong></span>
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size: 11px; color: var(--text-muted);">Owner / Dossier: <span style="color:#cbd5e1;">${v.owner}</span></div>
           <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
             First Seen: <span style="color:#94a3b8;">${stats.firstSeen ? stats.firstSeen.replace(' UTC', '') : 'N/A'}</span> &bull; 
-            Last Seen: <span style="color:#94a3b8;">${stats.lastSeen ? stats.lastSeen.replace(' UTC', '') : 'N/A'}</span>
+            Last Seen: <span style="color:#94a3b8;">${stats.lastSeen ? stats.lastSeen.replace(' UTC', '') : (stats.firstSeen ? stats.firstSeen.replace(' UTC', '') : 'N/A')}</span>
           </div>
         </div>
 

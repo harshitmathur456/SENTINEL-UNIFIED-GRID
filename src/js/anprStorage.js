@@ -6,8 +6,8 @@
 
 import { VEHICLE_DATABASE } from '../data/detections.js';
 
-const STORAGE_KEY = 'sentinel_anpr_grid_db_v4';
-const STATS_KEY = 'sentinel_anpr_stats_v4';
+const STORAGE_KEY = 'sentinel_anpr_grid_db_v5';
+const STATS_KEY = 'sentinel_anpr_stats_v5';
 
 class ANPRStorageManager {
   constructor() {
@@ -18,9 +18,10 @@ class ANPRStorageManager {
 
   init() {
     try {
-      // Purge legacy storage containing hardcoded plate
+      // Purge legacy storage
       localStorage.removeItem('sentinel_anpr_grid_db_v2');
       localStorage.removeItem('sentinel_anpr_grid_db_v3');
+      localStorage.removeItem('sentinel_anpr_grid_db_v4');
       const savedData = localStorage.getItem(STORAGE_KEY);
       const savedStats = localStorage.getItem(STATS_KEY);
 
