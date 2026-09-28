@@ -6,8 +6,8 @@
 
 import { VEHICLE_DATABASE } from '../data/detections.js';
 
-const STORAGE_KEY = 'sentinel_anpr_grid_db_v6';
-const STATS_KEY = 'sentinel_anpr_stats_v6';
+const STORAGE_KEY = 'sentinel_anpr_grid_db_v7';
+const STATS_KEY = 'sentinel_anpr_stats_v7';
 
 const LEGACY_ALIASES = {
   'CH1MAN': 'GJ01ER4892',
@@ -37,6 +37,7 @@ class ANPRStorageManager {
       localStorage.removeItem('sentinel_anpr_grid_db_v3');
       localStorage.removeItem('sentinel_anpr_grid_db_v4');
       localStorage.removeItem('sentinel_anpr_grid_db_v5');
+      localStorage.removeItem('sentinel_anpr_grid_db_v6');
       const savedData = localStorage.getItem(STORAGE_KEY);
       const savedStats = localStorage.getItem(STATS_KEY);
 
@@ -229,21 +230,34 @@ class ANPRStorageManager {
 
           const v = this.vehicles[key];
           v.is_real_pipeline_output = true;
-          const exists = v.detections.some(d => d.camera_id === evt.camera_id && d.timestamp_pts === evt.timestamp_pts);
+          
+          const camId = typeof evt.camera_id === 'string' ? parseInt(evt.camera_id.replace(/[^0-9]/g, ''), 10) : evt.camera_id;
+          const pts = evt.timestamp_pts || evt.pts_timestamp || Date.now();
+          const timestampUtc = evt.timestamp_utc || evt.timestamp || '2026-09-04 13:22:15 UTC';
+
+          const exists = v.detections.some(d => {
+            const dCamId = typeof d.camera_id === 'string' ? parseInt(d.camera_id.replace(/[^0-9]/g, ''), 10) : d.camera_id;
+            return dCamId === camId && Math.abs((d.timestamp_pts || 0) - pts) < 2000;
+          });
+
           if (!exists) {
             v.detections.push({
               id: evt.id || `DET-LIVE-${Date.now()}`,
-              camera_id: evt.camera_id,
-              location_name: evt.camera_name,
-              timestamp_pts: evt.timestamp_pts,
-              timestamp_utc: evt.timestamp_utc,
-              confidence: evt.confidence,
-              speed_est_kmh: evt.speed_est_kmh || 48,
-              bbox: evt.bbox || { x: 100, y: 100, width: 200, height: 80 },
-              thumbnail_file: evt.thumbnail_file,
-              is_watchlist_hit: !!evt.is_watchlist_hit,
+              camera_id: camId,
+              location_name: evt.camera_name || evt.location_name,
+              timestamp_pts: pts,
+              timestamp_utc: timestampUtc.includes('UTC') ? timestampUtc : timestampUtc + ' UTC',
+              confidence: typeof evt.confidence === 'number' && evt.confidence <= 1 ? Number((evt.confidence * 100).toFixed(1)) : (evt.confidence || 98.5),
+              speed_est_kmh: evt.speed_est_kmh || 42,
+              bbox: evt.bbox || { x1: 180, y1: 210, x2: 360, y2: 280 },
+              thumbnail_color: '#0f172a',
+              clip_duration_s: 6.0,
+              is_gap_hop: false,
+              is_watchlist_hit: !!evt.watchlist_flag || !!evt.is_watchlist_hit,
               is_real_pipeline_output: true
             });
+            // Re-sort chronologically
+            v.detections.sort((a, b) => (a.timestamp_pts || 0) - (b.timestamp_pts || 0));
             newCount++;
           }
         }

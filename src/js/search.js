@@ -93,7 +93,7 @@ function enrichVehicleRouteStats(vehicle) {
   }
 
   const dets = vehicle.detections;
-  const uniqueCamIds = new Set(dets.map(d => d.camera_id));
+  const uniqueCamIds = new Set(dets.map(d => typeof d.camera_id === 'string' ? parseInt(d.camera_id.replace(/[^0-9]/g, ''), 10) : d.camera_id));
   const cameraLocations = [];
   const districts = new Set();
   let totalDistanceKm = 0;
@@ -102,7 +102,8 @@ function enrichVehicleRouteStats(vehicle) {
   for (let i = 0; i < dets.length; i++) {
     const d = dets[i];
     totalSpeed += (d.speed_est_kmh || 40);
-    const cam = CAMERAS.find(c => c.id === d.camera_id);
+    const camId = typeof d.camera_id === 'string' ? parseInt(d.camera_id.replace(/[^0-9]/g, ''), 10) : d.camera_id;
+    const cam = CAMERAS.find(c => c.id === camId);
     if (cam) {
       cameraLocations.push({
         camera_id: cam.id,
@@ -112,25 +113,29 @@ function enrichVehicleRouteStats(vehicle) {
         district: cam.district,
         lat: cam.lat,
         lng: cam.lng,
-        timestamp: d.timestamp_utc
+        timestamp: d.timestamp_utc || d.timestamp
       });
       if (cam.district) districts.add(cam.district);
     }
 
     // Distance between sequential hops
     if (i > 0) {
-      const prevCam = CAMERAS.find(c => c.id === dets[i - 1].camera_id);
-      if (cam && prevCam) {
+      const prevCamId = typeof dets[i - 1].camera_id === 'string' ? parseInt(dets[i - 1].camera_id.replace(/[^0-9]/g, ''), 10) : dets[i - 1].camera_id;
+      const prevCam = CAMERAS.find(c => c.id === prevCamId);
+      if (cam && prevCam && cam.id !== prevCam.id) {
         totalDistanceKm += calculateDistanceKm(prevCam.lat, prevCam.lng, cam.lat, cam.lng);
       }
     }
   }
 
   // Calculate elapsed time
-  const firstPts = dets[0].timestamp_pts || 0;
-  const lastPts = dets[dets.length - 1].timestamp_pts || 0;
+  const firstPts = dets[0].timestamp_pts || dets[0].pts_timestamp || 0;
+  const lastPts = dets[dets.length - 1].timestamp_pts || dets[dets.length - 1].pts_timestamp || 0;
   const durationMs = Math.max(0, lastPts - firstPts);
-  const durationMin = Math.round(durationMs / 60000);
+  let durationMin = Math.round(durationMs / 60000);
+  if (durationMin === 0 && totalDistanceKm > 0) {
+    durationMin = Math.max(1, Math.round((totalDistanceKm / 42) * 60));
+  }
 
   vehicle.routeStats = {
     totalHops: dets.length,
@@ -138,8 +143,8 @@ function enrichVehicleRouteStats(vehicle) {
     totalDistanceKm: Number(totalDistanceKm.toFixed(1)),
     durationMinutes: durationMin,
     avgSpeedKmh: Math.round(totalSpeed / dets.length),
-    firstSeen: dets[0].timestamp_utc,
-    lastSeen: dets[dets.length - 1].timestamp_utc,
+    firstSeen: dets[0].timestamp_utc || dets[0].timestamp,
+    lastSeen: dets[dets.length - 1].timestamp_utc || dets[dets.length - 1].timestamp,
     firstCamera: cameraLocations[0] || null,
     lastCamera: cameraLocations[cameraLocations.length - 1] || null,
     districtsTraversed: Array.from(districts),

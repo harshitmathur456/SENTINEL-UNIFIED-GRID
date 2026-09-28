@@ -369,7 +369,8 @@ export class SentinelMap {
     const waypoints = [];
 
     vehicle.detections.forEach((det, idx) => {
-      const cam = CAMERAS.find(c => c.id === det.camera_id);
+      const camId = typeof det.camera_id === 'string' ? parseInt(det.camera_id.replace(/[^0-9]/g, ''), 10) : det.camera_id;
+      const cam = CAMERAS.find(c => c.id === camId);
       if (cam) {
         const point = [cam.lat, cam.lng];
         latLngs.push(point);
@@ -414,7 +415,7 @@ export class SentinelMap {
           </div>
           <div style="font-size: 12px; color: #fff; margin-bottom: 4px;">${wp.location_name}</div>
           <div style="font-family: 'JetBrains Mono'; font-size: 11px; color: #94a3b8; margin-bottom: 4px;">
-            Time: ${wp.timestamp_utc}
+            Time: ${wp.timestamp_utc || wp.timestamp || '13:22:15'}
           </div>
           <div style="font-size: 11px; color: #cbd5e1;">Speed Est: ${wp.speed_est_kmh} km/h</div>
           ${wp.is_gap_hop ? '<div style="color: #f59e0b; font-size: 10px; margin-top: 4px;">⚠️ Inferred transit gap across non-adjacent cameras</div>' : ''}

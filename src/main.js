@@ -124,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     card.style.display = 'block';
     const det = vehicle.detections[hopIndex];
-    const cam = CAMERAS.find(c => c.id === det.camera_id);
+    const camId = typeof det.camera_id === 'string' ? parseInt(det.camera_id.replace(/[^0-9]/g, ''), 10) : det.camera_id;
+    const cam = CAMERAS.find(c => c.id === camId);
 
     if (hopLabel) {
       hopLabel.textContent = `HOP #${hopIndex + 1} OF ${vehicle.detections.length}`;
@@ -234,7 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let nearestStationHtml = '';
     if (v.detections && v.detections.length > 0) {
       const lastDet = v.detections[v.detections.length - 1];
-      const lastCam = CAMERAS.find(c => c.id === lastDet.camera_id);
+      const lastCamId = typeof lastDet.camera_id === 'string' ? parseInt(lastDet.camera_id.replace(/[^0-9]/g, ''), 10) : lastDet.camera_id;
+      const lastCam = CAMERAS.find(c => c.id === lastCamId);
       if (lastCam) {
         const nearestPS = findNearestPoliceStation(lastCam.lat, lastCam.lng);
         if (nearestPS) {
@@ -309,13 +311,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render Timeline
     let timelineHtml = '<div class="timeline-container">';
     v.detections.forEach((d, idx) => {
+      const timeStr = d.timestamp_utc ? d.timestamp_utc.replace(' UTC', '') : (d.timestamp || '13:22:15');
       timelineHtml += `
         <div class="timeline-item ${idx === 0 ? 'active' : ''}" data-hop-index="${idx}">
           <div class="timeline-header">
             <span class="timeline-hop-badge">
               <i class="fas fa-camera"></i> HOP #${idx + 1}
             </span>
-            <span class="timeline-time">${d.timestamp_utc.replace(' UTC', '')}</span>
+            <span class="timeline-time">${timeStr}</span>
           </div>
           <div class="timeline-location">${d.location_name}</div>
           <div class="timeline-metrics-row">
