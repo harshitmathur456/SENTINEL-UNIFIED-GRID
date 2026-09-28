@@ -18,8 +18,8 @@ from fastapi import APIRouter, HTTPException, Response
 stream_router = APIRouter(prefix="/api/stream", tags=["stream"])
 
 # Sentinel Sandbox Credentials
-AUTH_EMAIL = os.getenv("SENTINEL_AUTH_EMAIL", "olly2015aarav@gmail.com")
-AUTH_CODE = os.getenv("SENTINEL_AUTH_CODE", "REDACTED_CODE")
+AUTH_EMAIL = os.getenv("SENTINEL_AUTH_EMAIL", "")
+AUTH_CODE = os.getenv("SENTINEL_AUTH_CODE", "")
 BASE_URL = "https://cctv.corp8.cloud"
 
 class LRUCache:

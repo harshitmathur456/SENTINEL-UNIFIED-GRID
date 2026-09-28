@@ -8,7 +8,7 @@ import os
 session = requests.Session()
 login_res = session.post(
     'https://cctv.corp8.cloud/auth/login',
-    data={'email': 'harshitmathur456@gmail.com', 'password': 'REDACTED_PASSWORD'},
+    data={'email': os.environ.get('SENTINEL_EMAIL', ''), 'password': os.environ.get('SENTINEL_PASSWORD', '')},
     headers={'User-Agent': 'Mozilla/5.0'}
 )
 print("Login HTTP status:", login_res.status_code)

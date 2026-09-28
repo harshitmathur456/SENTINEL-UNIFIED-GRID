@@ -48,8 +48,8 @@ try:
 except ImportError:
     HAS_CRYPTO = False
 
-DEFAULT_EMAIL = os.environ.get("SENTINEL_EMAIL", "harshitmathur456@gmail.com")
-DEFAULT_PASSWORD = os.environ.get("SENTINEL_PASSWORD", "REDACTED_PASSWORD")
+DEFAULT_EMAIL = os.environ.get("SENTINEL_EMAIL", "")
+DEFAULT_PASSWORD = os.environ.get("SENTINEL_PASSWORD", "")
 BASE_URL = "https://cctv.corp8.cloud"
 
 class GovSandboxStreamPipeline:

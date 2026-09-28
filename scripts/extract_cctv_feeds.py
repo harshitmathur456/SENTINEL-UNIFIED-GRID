@@ -14,8 +14,8 @@ import requests
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
-EMAIL = os.environ.get("SENTINEL_EMAIL", "harshitmathur456@gmail.com")
-PASSWORD = os.environ.get("SENTINEL_PASSWORD", "REDACTED_PASSWORD")
+EMAIL = os.environ.get("SENTINEL_EMAIL", "")
+PASSWORD = os.environ.get("SENTINEL_PASSWORD", "")
 BASE_URL = "https://cctv.corp8.cloud"
 
 HEADERS = {

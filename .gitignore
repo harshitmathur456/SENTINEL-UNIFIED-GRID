@@ -34,6 +34,9 @@ __pycache__/
 *.swo
 .DS_Store
 password.txt
+.env
+.env.*
+*.env
 *.ts
 
 # Temporary outputs
