@@ -20,6 +20,7 @@ import { findNearestPoliceStation, issuePoliceDispatch } from './dispatch.js';
 let activeHls = null;
 let streamMiniMap = null;
 let currentModalCamera = null;
+let modalOsdInterval = null;
 
 export function initStreamViewer() {
   // Initialize MiniMap once DOM container is ready
@@ -202,10 +203,13 @@ export function openStreamModal(camera, detection = null) {
     }
   }
 
-  // 5. Open Modal
+  // 5. Start Tactical IST & PTS OSD clock
+  startModalOsd(camera);
+
+  // 6. Open Modal
   modal.classList.add('active');
 
-  // 6. Initialize & Auto-Zoom Per-Camera Mini-Map
+  // 7. Initialize & Auto-Zoom Per-Camera Mini-Map
   if (!streamMiniMap) {
     streamMiniMap = new CameraMiniMap('stream-mini-map');
   }
@@ -214,7 +218,42 @@ export function openStreamModal(camera, detection = null) {
   }
 }
 
+function startModalOsd(camera) {
+  if (modalOsdInterval) clearInterval(modalOsdInterval);
+  const padId = String(camera.id).padStart(2, '0');
+  const camIdEl = document.getElementById('modal-osd-cam-id');
+  const clockEl = document.getElementById('modal-osd-clock');
+  const ptsEl = document.getElementById('modal-osd-pts');
+  if (camIdEl) camIdEl.textContent = `CAM ${padId}`;
+
+  const basePts = 1788528000 + (camera.id * 1420);
+  const updateModalOsd = () => {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const ist = new Date(utc + (5.5 * 3600 * 1000));
+    const hh = String(ist.getHours()).padStart(2, '0');
+    const mm = String(ist.getMinutes()).padStart(2, '0');
+    const ss = String(ist.getSeconds()).padStart(2, '0');
+    const ms = String(Math.floor(ist.getMilliseconds() / 10)).padStart(2, '0');
+
+    if (clockEl) {
+      clockEl.textContent = `${hh}:${mm}:${ss}.${ms} IST`;
+    }
+    if (ptsEl) {
+      const framePts = (basePts + Math.floor(now.getTime() / 40)) % 1000000000;
+      ptsEl.textContent = `PTS ${framePts}`;
+    }
+  };
+  updateModalOsd();
+  modalOsdInterval = setInterval(updateModalOsd, 100);
+}
+
 export function closeStreamModal() {
+  if (modalOsdInterval) {
+    clearInterval(modalOsdInterval);
+    modalOsdInterval = null;
+  }
+
   const modal = document.getElementById('stream-modal');
   if (modal) {
     modal.classList.remove('active');

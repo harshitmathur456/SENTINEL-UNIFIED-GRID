@@ -5,7 +5,7 @@ import { SentinelMap } from './js/map.js';
 import { searchVehicle, generateEvidencePacket, getVehicleSuggestions } from './js/search.js';
 import { RouteReplayController } from './js/replay.js';
 import { openStreamModal, closeStreamModal, getActiveModalCamera, initStreamViewer } from './js/streamViewer.js';
-import { triggerLiveWatchlistAlert, pollLiveAlerts, closeLiveAlertPopup, renderWatchlistItems, addWatchlistTarget, isAudioMuted, toggleAudioMute } from './js/watchlist.js';
+import { triggerLiveWatchlistAlert, pollLiveAlerts, closeLiveAlertPopup, renderWatchlistItems, addWatchlistTarget, updateWatchlistBadge, isAudioMuted, toggleAudioMute } from './js/watchlist.js';
 import { findNearestPoliceStation, issuePoliceDispatch } from './js/dispatch.js';
 import { anprStorage } from './js/anprStorage.js';
 import { anprEngine } from './js/anprEngine.js';
@@ -779,6 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       (lat, lng, zoom) => sentinelMap.panToWaypoint(lat, lng, zoom)
     );
+    updateWatchlistBadge();
   }
   refreshWatchlistUI();
 

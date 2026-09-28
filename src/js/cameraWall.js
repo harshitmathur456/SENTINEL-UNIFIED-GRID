@@ -143,10 +143,17 @@ export class CameraWall {
         
         <div class="tile-crt-scanlines"></div>
         
-        <!-- Live OSD Timestamp Overlay -->
+        <!-- Live OSD Timestamp & PTS Tactical Bar -->
         <div class="tile-osd-bar">
-          <span class="tile-osd-clock" id="wall-clock-${cam.id}">--:--:-- IST</span>
-          <span class="tile-osd-tag">PTS SYNC</span>
+          <div class="tile-osd-left">
+            <span class="tile-osd-rec"><span class="rec-blink-dot"></span>REC</span>
+            <span class="tile-osd-cam-id">CAM ${padId}</span>
+            <span class="tile-osd-clock" id="wall-clock-${cam.id}">--:--:--.-- IST</span>
+          </div>
+          <div class="tile-osd-right">
+            <span class="tile-osd-pts" id="wall-pts-${cam.id}">PTS 1788528.00</span>
+            <span class="tile-osd-sync"><span class="sync-dot"></span>LIVE SYNC</span>
+          </div>
         </div>
 
         <div class="tile-watermark-corner">
@@ -199,16 +206,28 @@ export class CameraWall {
     const videoEl = tile.querySelector('.tile-video-el');
     const canvas = tile.querySelector('.tile-canvas-preview');
     const clockEl = tile.querySelector('.tile-osd-clock');
+    const ptsEl = tile.querySelector('.tile-osd-pts');
 
-    // Update real-time clock OSD
+    // Update real-time tactical IST & PTS clock OSD
+    const basePts = 1788528000 + (cam.id * 1420);
     const updateClock = () => {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const ist = new Date(utc + (5.5 * 3600 * 1000));
+      const hh = String(ist.getHours()).padStart(2, '0');
+      const mm = String(ist.getMinutes()).padStart(2, '0');
+      const ss = String(ist.getSeconds()).padStart(2, '0');
+      const ms = String(Math.floor(ist.getMilliseconds() / 10)).padStart(2, '0');
+
       if (clockEl) {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-GB', { hour12: false });
-        clockEl.textContent = `${timeStr}.${String(Math.floor(now.getMilliseconds() / 100)).padStart(2, '0')} IST`;
+        clockEl.textContent = `${hh}:${mm}:${ss}.${ms} IST`;
+      }
+      if (ptsEl) {
+        const framePts = (basePts + Math.floor(now.getTime() / 40)) % 1000000000;
+        ptsEl.textContent = `PTS ${framePts}`;
       }
     };
-    setInterval(updateClock, 200);
+    setInterval(updateClock, 100);
 
     // Render initial surveillance frame while live HLS stream connects
     if (canvas) {

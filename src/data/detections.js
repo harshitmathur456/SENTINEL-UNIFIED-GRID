@@ -4,47 +4,7 @@
  * Connected Across Real Gujarat CCTV Cameras: Cam 01, Cam 02, Cam 03, Cam 04, Cam 05, Cam 08, Cam 10, Cam 18
  */
 
-export const WATCHLIST = [
-  {
-    "id": 1,
-    "plate_number": "GJ01ER4892",
-    "vehicle_model": "White Hyundai Creta SX (Ahmedabad West)",
-    "vehicle_desc": "White Hyundai Creta SX (High Priority Intercept)",
-    "reason": "Stolen Vehicle Alert / High-Speed Transit Corridor Tracking (FIR #2026-0419)",
-    "category": "Critical Intercept",
-    "added_by": "Sabarmati Police Station Command",
-    "added_at": "2026-09-04 13:22:15 UTC",
-    "date_flagged": "2026-09-04",
-    "severity": "CRITICAL",
-    "last_known_location": "05 Visat teen Rasta, Ahmedabad"
-  },
-  {
-    "id": 2,
-    "plate_number": "GJ27AK3195",
-    "vehicle_model": "Dark Grey Mahindra Scorpio-N (Ahmedabad East)",
-    "vehicle_desc": "Dark Grey Mahindra Scorpio-N (Suspect Transit)",
-    "reason": "Active Surveillance Flag: Narcotics Corridor Relay (FIR #2026-0814)",
-    "category": "Surveillance Flag",
-    "added_by": "Gujarat Police Grid Intercept Command",
-    "added_at": "2026-09-04 13:25:10 UTC",
-    "date_flagged": "2026-09-04",
-    "severity": "CRITICAL",
-    "last_known_location": "03 O.N.G.C. Office, Ahmedabad"
-  },
-  {
-    "id": 3,
-    "plate_number": "GJ01BN7104",
-    "vehicle_model": "Silver Tata Nexon EV (Ahmedabad RTO)",
-    "vehicle_desc": "Silver Tata Nexon EV (Commercial Fleet)",
-    "reason": "Cross-Camera Corridor Speed & Transit Audit",
-    "category": "Traffic Monitoring",
-    "added_by": "Ahmedabad Traffic Police Control Room",
-    "added_at": "2026-09-04 13:33:37 UTC",
-    "date_flagged": "2026-09-04",
-    "severity": "HIGH",
-    "last_known_location": "05 Visat teen Rasta, Ahmedabad"
-  }
-];
+export const WATCHLIST = [];
 
 export const VEHICLE_DATABASE = {
   "GJ01ER4892": {
@@ -53,7 +13,7 @@ export const VEHICLE_DATABASE = {
     "owner": "Vikram Patel / Registered at Ahmedabad RTO (GJ-01)",
     "color": "#10b981",
     "is_real_pipeline_output": true,
-    "is_watchlist_hit": true,
+    "is_watchlist_hit": false,
     "detections": [
       {
         "id": "gov-cam04-1788528135000",
@@ -135,7 +95,7 @@ export const VEHICLE_DATABASE = {
     "owner": "Gujarat Urban Mobility Services (Ahmedabad RTO)",
     "color": "#f59e0b",
     "is_real_pipeline_output": true,
-    "is_watchlist_hit": true,
+    "is_watchlist_hit": false,
     "detections": [
       {
         "id": "gov-cam01-1788528817591",
@@ -217,7 +177,7 @@ export const VEHICLE_DATABASE = {
     "owner": "Kiritbhai Desai / Registered at Ahmedabad East RTO (GJ-27)",
     "color": "#38bdf8",
     "is_real_pipeline_output": true,
-    "is_watchlist_hit": true,
+    "is_watchlist_hit": false,
     "detections": [
       {
         "id": "gov-cam04-1788528310000",

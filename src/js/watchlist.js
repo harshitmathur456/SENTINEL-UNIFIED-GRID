@@ -3,9 +3,31 @@ import { findNearestPoliceStation } from './dispatch.js';
 import { CAMERAS } from '../data/cameras.js';
 
 let audioCtx = null;
+const WATCHLIST_STORAGE_KEY = 'sentinel_custom_watchlist_v3';
 
-// Dynamic In-Memory + LocalStorage Watchlist Database
-let activeWatchlist = [...BASE_WATCHLIST];
+// Cache callbacks for re-renders upon add/remove
+let cachedSelectPlateCallback = null;
+let cachedFlyToCallback = null;
+
+function loadSavedWatchlist() {
+  try {
+    const raw = localStorage.getItem(WATCHLIST_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+}
+
+function saveWatchlist(list) {
+  try {
+    localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {}
+}
+
+// Active Watchlist: strictly dynamic (starts with 0 targets unless user enrolled custom targets)
+let activeWatchlist = loadSavedWatchlist();
 
 export function getActiveWatchlist() {
   return activeWatchlist;
@@ -22,22 +44,28 @@ export function addWatchlistTarget(target) {
   const cleanPlate = target.plate_number.toUpperCase().replace(/[^A-Z0-9]/g, '');
   
   // Check if exists
-  const existing = activeWatchlist.find(w => w.plate_number.replace(/[^A-Z0-9]/g, '') === cleanPlate);
-  if (existing) {
-    Object.assign(existing, target);
+  const existingIndex = activeWatchlist.findIndex(w => w.plate_number.replace(/[^A-Z0-9]/g, '') === cleanPlate);
+  const now = new Date();
+  const timecode = `${now.toISOString().split('T')[0]} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const entry = {
+    plate_number: cleanPlate,
+    reason: target.reason || "FLAGGED FOR POLICE INTERCEPTION",
+    category: target.category || "Wanted",
+    severity: target.severity || "HIGH",
+    alert_sound: true,
+    vehicle_desc: target.vehicle_desc || "Surveillance Target",
+    owner: target.owner || "Under Investigation",
+    date_flagged: timecode
+  };
+
+  if (existingIndex >= 0) {
+    activeWatchlist[existingIndex] = { ...activeWatchlist[existingIndex], ...entry };
   } else {
-    activeWatchlist.unshift({
-      plate_number: cleanPlate,
-      reason: target.reason || "FLAGGED FOR POLICE INTERCEPTION",
-      category: target.category || "Wanted",
-      severity: target.severity || "HIGH",
-      alert_sound: true,
-      vehicle_desc: target.vehicle_desc || "Suspicious Vehicle",
-      owner: target.owner || "Under Investigation",
-      date_flagged: new Date().toISOString().split('T')[0]
-    });
+    activeWatchlist.unshift(entry);
   }
 
+  saveWatchlist(activeWatchlist);
   renderWatchlistItems();
   updateWatchlistBadge();
   return true;
@@ -46,15 +74,33 @@ export function addWatchlistTarget(target) {
 export function removeWatchlistTarget(plateNumber) {
   const cleanPlate = plateNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
   activeWatchlist = activeWatchlist.filter(w => w.plate_number.replace(/[^A-Z0-9]/g, '') !== cleanPlate);
+  saveWatchlist(activeWatchlist);
   renderWatchlistItems();
   updateWatchlistBadge();
 }
 
 export function updateWatchlistBadge() {
-  const badge = document.querySelector('.metric-pill[title*="watchlist"] strong');
-  if (badge) {
-    badge.textContent = `${activeWatchlist.length} TARGETS`;
+  const count = activeWatchlist.length;
+  const countStr = `${count} ${count === 1 ? 'TARGET' : 'TARGETS'}`;
+
+  // Header metric pill
+  const headerStrong = document.getElementById('header-watchlist-count');
+  if (headerStrong) headerStrong.textContent = countStr;
+
+  const metricPill = document.querySelector('.metric-pill[title*="watchlist"] strong');
+  if (metricPill) metricPill.textContent = countStr;
+
+  // Sidebar card badge
+  const enrolledBadge = document.getElementById('enrolled-targets-count-badge');
+  if (enrolledBadge) {
+    enrolledBadge.textContent = `${count} ACTIVE`;
+    enrolledBadge.style.color = count > 0 ? '#fda4af' : '#38bdf8';
+    enrolledBadge.style.background = count > 0 ? 'rgba(244,63,94,0.2)' : 'rgba(56,189,248,0.15)';
   }
+
+  // Floating scan stats
+  const statWatchlist = document.getElementById('stat-watchlist-count');
+  if (statWatchlist) statWatchlist.textContent = count;
 }
 
 let isMuted = localStorage.getItem('sentinel_audio_muted') === 'true';
@@ -151,8 +197,9 @@ export function triggerWatchlistAlertWithDetails(plate, info, camera, onFlyToCal
 
     alertPopup.classList.add('active');
 
-    if (typeof onFlyToCallback === 'function') {
-      onFlyToCallback(cam.lat, cam.lng, 15);
+    const flyCallback = onFlyToCallback || cachedFlyToCallback;
+    if (typeof flyCallback === 'function') {
+      flyCallback(cam.lat, cam.lng, 15);
     }
   }
 }
@@ -161,8 +208,11 @@ export function triggerWatchlistAlertWithDetails(plate, info, camera, onFlyToCal
  * Simulates a real-time live alert for a watchlist hit
  */
 export function triggerLiveWatchlistAlert(onFlyToCallback) {
-  // Demo fallback
-  const hitPlate = activeWatchlist.length > 0 ? activeWatchlist[0].plate_number : "JANPATH";
+  if (activeWatchlist.length === 0) {
+    alert("Watchlist is currently empty. Please enroll a vehicle plate first.");
+    return;
+  }
+  const hitPlate = activeWatchlist[0].plate_number;
   const vehicle = VEHICLE_DATABASE[hitPlate];
   let camera = CAMERAS[0];
 
@@ -224,10 +274,29 @@ export function closeLiveAlertPopup() {
  * Renders all watchlist items into the Watchlist Tab
  */
 export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
+  if (onSelectPlateCallback) cachedSelectPlateCallback = onSelectPlateCallback;
+  if (onFlyToCallback) cachedFlyToCallback = onFlyToCallback;
+
   const container = document.getElementById('watchlist-scroll-list');
   if (!container) return;
 
   container.innerHTML = '';
+
+  if (activeWatchlist.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state-notice" style="padding: 24px 16px; text-align: center; border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; margin-top: 6px; background: rgba(15, 23, 42, 0.45);">
+        <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+          <i class="fas fa-shield-check" style="font-size: 18px; color: var(--accent-cyan);"></i>
+        </div>
+        <div style="font-weight: 700; font-size: 12px; color: #fff; margin-bottom: 4px; letter-spacing: 0.5px;">NO ACTIVE WATCHLIST TARGETS</div>
+        <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; max-width: 250px; margin: 0 auto;">
+          Use the <strong>Enroll Target</strong> form above to monitor any Gujarat registration number (e.g. <code>GJ01ER4892</code>) for automated intercept.
+        </div>
+      </div>
+    `;
+    updateWatchlistBadge();
+    return;
+  }
 
   activeWatchlist.forEach((w) => {
     const card = document.createElement('div');
@@ -254,7 +323,7 @@ export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
         ${w.reason}
       </div>
       <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;">
-        <span>${w.vehicle_desc || w.vehicle_model || 'Real ANPR Sighting'}</span>
+        <span>${w.vehicle_desc || w.vehicle_model || 'Target Enrolled'}</span>
         <span>Flagged: ${flaggedDate}</span>
       </div>
       <div style="margin-top: 6px; display: flex; gap: 6px;">
@@ -272,14 +341,14 @@ export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
       e.stopPropagation();
       const vehicle = VEHICLE_DATABASE[w.plate_number];
       const cam = vehicle && vehicle.detections ? CAMERAS.find(c => c.id === vehicle.detections[0].camera_id) : CAMERAS[0];
-      triggerWatchlistAlertWithDetails(w.plate_number, w, cam, onFlyToCallback);
+      triggerWatchlistAlertWithDetails(w.plate_number, w, cam, cachedFlyToCallback);
     });
 
     // Trace button
     card.querySelector('.btn-trace-wl-plate').addEventListener('click', (e) => {
       e.stopPropagation();
-      if (typeof onSelectPlateCallback === 'function') {
-        onSelectPlateCallback(w.plate_number);
+      if (typeof cachedSelectPlateCallback === 'function') {
+        cachedSelectPlateCallback(w.plate_number);
       }
     });
 
@@ -291,4 +360,6 @@ export function renderWatchlistItems(onSelectPlateCallback, onFlyToCallback) {
 
     container.appendChild(card);
   });
+
+  updateWatchlistBadge();
 }

@@ -46,7 +46,7 @@
         </div>
         <div class="metric-pill" title="Active watchlist targets">
           <span class="dot alert"></span>
-          <span>WATCHLIST: <strong>3 TARGETS</strong></span>
+          <span>WATCHLIST: <strong id="header-watchlist-count">0 TARGETS</strong></span>
         </div>
       </div>
 
@@ -189,45 +189,47 @@
             <div id="stations-scroll-list" class="item-scroll-list"></div>
           </div>
 
-          <!-- TAB 4: WATCHLIST & ALERTS -->
+          <!-- TAB 4: WATCHLIST & ENROLLMENT -->
           <div id="tab-watchlist" class="tab-content">
-            <div class="hud-card">
+            <!-- PRIMARY FEATURE: Add / Enroll Target in Watchlist Form -->
+            <div class="hud-card" style="border-color: rgba(244, 63, 94, 0.4); background: linear-gradient(180deg, rgba(244, 63, 94, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);">
               <div class="hud-card-header">
-                <span class="hud-card-title"><i class="fas fa-shield-virus"></i> Active Watchlist</span>
-                <span class="hud-badge" style="background: rgba(244,63,94,0.2); color:#fda4af;">CRITICAL POOL</span>
+                <span class="hud-card-title"><i class="fas fa-shield-plus" style="color: var(--accent-rose);"></i> Enroll Vehicle in Watchlist</span>
+                <span class="hud-badge" style="background: rgba(244, 63, 94, 0.2); color: #fda4af;">TARGET ENROLLMENT</span>
               </div>
-              <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">
-                Vehicles flagged for auto-interception across Gujarat CCTV grid. Watchlist matches trigger instant nearest police station dispatch.
+              <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">
+                Enter a vehicle registration plate to flag for automated police interception across Gujarat CCTV grid.
               </p>
-              <div id="watchlist-scroll-list" class="item-scroll-list"></div>
-            </div>
-
-            <!-- Add Target to Watchlist Form (P0 Item 2) -->
-            <div class="hud-card" style="margin-top: 12px; border-color: rgba(244, 63, 94, 0.35);">
-              <div class="hud-card-header">
-                <span class="hud-card-title"><i class="fas fa-plus-circle" style="color: var(--accent-rose);"></i> Add Watchlist Target</span>
-                <span class="hud-badge" style="background: rgba(244, 63, 94, 0.2); color: #fda4af;">NEW TARGET</span>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-                <input type="text" id="new-wl-plate" class="filter-input" placeholder="Plate No. (e.g. JANPATH, CS1TMS)" autocomplete="off">
-                <input type="text" id="new-wl-reason" class="filter-input" placeholder="Offense / FIR / Reason for flag" autocomplete="off">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <input type="text" id="new-wl-plate" class="filter-input" placeholder="Plate No. (e.g. GJ01ER4892, GJ27AK3195)" autocomplete="off" style="text-transform: uppercase; font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.5px;">
+                <input type="text" id="new-wl-reason" class="filter-input" placeholder="Offense / FIR / Reason for flag (e.g. FIR #2026-0419)" autocomplete="off">
                 <div style="display: flex; gap: 6px;">
                   <select id="new-wl-category" class="filter-select" style="flex: 1;">
-                    <option value="Stolen">🚨 Stolen</option>
-                    <option value="Wanted">⚠️ Wanted</option>
+                    <option value="Stolen">🚨 Stolen Vehicle</option>
+                    <option value="Wanted">⚠️ Wanted / Intercept</option>
                     <option value="Hit and Run">⚡ Hit & Run</option>
-                    <option value="Suspension">📋 Suspension</option>
+                    <option value="Surveillance">👁️ Corridor Surveillance</option>
+                    <option value="Suspension">📋 RTO Suspension</option>
                   </select>
                   <select id="new-wl-severity" class="filter-select" style="flex: 1;">
                     <option value="CRITICAL">🔴 CRITICAL</option>
-                    <option value="HIGH">🟠 HIGH</option>
+                    <option value="HIGH" selected>🟠 HIGH</option>
                     <option value="MEDIUM">🟡 MEDIUM</option>
                   </select>
                 </div>
-                <button id="btn-add-watchlist-target" class="btn-header danger" style="justify-content: center; width: 100%; padding: 8px; font-weight: 600;">
+                <button id="btn-add-watchlist-target" class="btn-header danger" style="justify-content: center; width: 100%; padding: 9px; font-weight: 700; font-size: 12px; margin-top: 2px;">
                   <i class="fas fa-shield-plus"></i> Enroll Target in Watchlist DB
                 </button>
               </div>
+            </div>
+
+            <!-- ENROLLED TARGETS LIST -->
+            <div class="hud-card" style="margin-top: 12px;">
+              <div class="hud-card-header">
+                <span class="hud-card-title"><i class="fas fa-list-check" style="color: var(--accent-cyan);"></i> Enrolled Targets</span>
+                <span class="hud-badge" id="enrolled-targets-count-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">0 ACTIVE</span>
+              </div>
+              <div id="watchlist-scroll-list" class="item-scroll-list"></div>
             </div>
           </div>
         </div>
@@ -387,6 +389,18 @@
                 <div id="stream-loading-spinner" class="stream-loading-overlay" style="display: none; z-index: 4;">
                   <div class="spinner-ring"></div>
                   <span>Connecting to Live Stream...</span>
+                </div>
+                <!-- Live Tactical OSD Bar in Modal Stream Viewer -->
+                <div class="tile-osd-bar stream-modal-osd-bar">
+                  <div class="tile-osd-left">
+                    <span class="tile-osd-rec"><span class="rec-blink-dot"></span>REC</span>
+                    <span class="tile-osd-cam-id" id="modal-osd-cam-id">CAM 01</span>
+                    <span class="tile-osd-clock" id="modal-osd-clock">--:--:--.-- IST</span>
+                  </div>
+                  <div class="tile-osd-right">
+                    <span class="tile-osd-pts" id="modal-osd-pts">PTS 1788528.00</span>
+                    <span class="tile-osd-sync"><span class="sync-dot"></span>LIVE 25FPS SYNC</span>
+                  </div>
                 </div>
                 <div class="stream-telemetry-badge" style="z-index: 3;">
                   <div style="color: var(--accent-emerald); font-weight: 700;">● LIVE TELEMETRY FEED</div>

@@ -2309,24 +2309,114 @@ html, body {
   position: absolute;
   top: 6px;
   left: 8px;
+  right: 8px;
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   font-family: var(--font-mono);
   font-size: 10px;
   color: #ffffff;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(2px);
-  padding: 2px 6px;
+  background: linear-gradient(180deg, rgba(8, 14, 26, 0.88) 0%, rgba(15, 23, 42, 0.78) 100%);
+  backdrop-filter: blur(4px);
+  padding: 3px 8px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
   pointer-events: none;
+  letter-spacing: 0.3px;
 }
 
-.tile-osd-tag {
+.tile-osd-left,
+.tile-osd-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tile-osd-rec {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  color: #ff4d6d;
+  letter-spacing: 0.8px;
+  font-size: 9.5px;
+}
+
+.rec-blink-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #ef4444;
+  animation: recBlinkPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes recBlinkPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(0.8); }
+}
+
+.tile-osd-cam-id {
+  color: var(--accent-cyan);
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.tile-osd-clock {
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(0, 229, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+
+.tile-osd-pts {
+  color: #94a3b8;
+  font-size: 9.5px;
+  font-variant-numeric: tabular-nums;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tile-osd-sync {
   color: var(--accent-emerald);
   font-weight: 700;
+  font-size: 9.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sync-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 5px #10b981;
+  animation: syncPulse 2s infinite ease-in-out;
+}
+
+@keyframes syncPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.stream-modal-osd-bar {
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  font-size: 11px;
+  z-index: 5;
 }
 
 .tile-watermark-corner {

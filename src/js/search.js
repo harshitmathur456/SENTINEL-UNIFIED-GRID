@@ -1,6 +1,7 @@
 import { VEHICLE_DATABASE } from '../data/detections.js';
 import { anprStorage } from './anprStorage.js';
 import { CAMERAS } from '../data/cameras.js';
+import { checkWatchlistHit } from './watchlist.js';
 
 /**
  * Normalizes vehicle registration plates:
@@ -150,6 +151,13 @@ function enrichVehicleRouteStats(vehicle) {
     districtsTraversed: Array.from(districts),
     cameraLocations
   };
+
+  // Dynamically evaluate Watchlist hit against active watchlist database
+  const wlHit = checkWatchlistHit(vehicle.plate_number);
+  vehicle.is_watchlist_hit = !!wlHit;
+  if (wlHit) {
+    vehicle.watchlist_info = wlHit;
+  }
 
   return vehicle;
 }
