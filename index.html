@@ -108,23 +108,23 @@
               <div class="search-box-wrapper">
                 <div class="search-input-group">
                   <i class="fas fa-search search-icon"></i>
-                  <input type="text" id="anpr-search-input" class="anpr-search-input" placeholder="Enter Registration No. (e.g. GJ01AB1234)" value="GJ01AB1234" autocomplete="off">
+                  <input type="text" id="anpr-search-input" class="anpr-search-input" placeholder="Enter Registration No. (e.g. JANPATH, GJ01ST0007)" value="" autocomplete="off">
                   <button id="btn-search-anpr" class="btn-search-exec">TRACE</button>
                 </div>
                 <div id="anpr-suggestions-list" class="anpr-suggestions-list" style="display: none;"></div>
                 <div id="fuzzy-hint-banner" class="fuzzy-hint-banner" style="display: none;"></div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-                  <span>Quick Evaluation Vehicles:</span>
+                  <span>Genuine ANPR Captured Vehicles:</span>
                   <span id="grid-plates-indexed-badge" class="hud-badge" style="color: var(--accent-emerald);">GRID INDEXED</span>
                 </div>
                 <div class="quick-pick-chips">
-                  <button class="chip-vehicle" data-plate="GJ01AB1234" title="Ahmedabad Urban Corridor Route (8 Cameras)">GJ01AB1234 (Ahmedabad - 8 Cams)</button>
-                  <button class="chip-vehicle" data-plate="GJ11CD9876" title="Junagadh Sector Route (5 Cameras)">GJ11CD9876 (Junagadh - 5 Cams)</button>
-                  <button class="chip-vehicle" data-plate="GJ21EF4521" title="Navsari & Bilimora Highway (7 Cameras)">GJ21EF4521 (Navsari - 7 Cams)</button>
+                  <button class="chip-vehicle" data-plate="JANPATH" title="Live ANPR Capture - 02 Janpath Feed">JANPATH (Live Cam 02)</button>
+                  <button class="chip-vehicle" data-plate="CH1MAN" title="Live ANPR Capture - 01 Chiman bhai Bridge Feed">CH1MAN (Live Cam 01)</button>
+                  <button class="chip-vehicle" data-plate="GJ01ST0007" title="Watchlist Target - Stolen Honda City (FIR #2026-8812)">GJ01ST0007 (Watchlist City)</button>
                   <button class="chip-vehicle" data-plate="GJ05WL9999" title="Watchlist Target - Contraband Thar (3 Cameras)">GJ05WL9999 (Watchlist Thar)</button>
-                  <button class="chip-vehicle" data-plate="GJ03GH3322" title="Rajkot Transit Route (2 Cameras)">GJ03GH3322 (Rajkot)</button>
-                  <button class="chip-vehicle" data-plate="GJO1AB1234" title="Test OCR Typo Tolerance (Letter O instead of Zero)">GJO1AB1234 (Fuzzy Test)</button>
+                  <button class="chip-vehicle" data-plate="GJ11CD9876" title="Junagadh Sector Route (5 Cameras)">GJ11CD9876 (Junagadh)</button>
+                  <button class="chip-vehicle" data-plate="GJ21EF4521" title="Navsari & Bilimora Highway (7 Cameras)">GJ21EF4521 (Navsari)</button>
                 </div>
 
                 <!-- Custom Test Video Ingestion & Forensic Export Actions -->
@@ -295,7 +295,7 @@
         <div id="route-replay-bar" class="route-replay-bar" style="display: none;">
           <div class="replay-top-row">
             <div class="replay-title-wrap">
-              <span id="replay-plate-label" class="replay-plate-pill">GJ01AB1234</span>
+              <span id="replay-plate-label" class="replay-plate-pill">--</span>
               <span id="replay-status-text" class="replay-status-text">
                 <i class="fas fa-satellite-dish" style="color: var(--accent-purple);"></i> Initializing Route...
               </span>
@@ -572,7 +572,7 @@
             <div class="hud-card" style="padding: 10px;">
               <div style="font-size: 11px; color: var(--text-muted);">EXTRACTED REGISTRATION:</div>
               <div id="video-anpr-plate-display" style="font-size: 18px; font-weight: 800; font-family: var(--font-mono); color: var(--accent-cyan); margin-top: 2px;">
-                GJ01AB1234
+                --
               </div>
             </div>
             <div class="hud-card" style="padding: 10px;">

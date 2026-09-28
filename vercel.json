@@ -1,1 +1,40 @@
-{"rewrites": [{"source": "/cdn/:match*", "destination": "https://cctv.corp8.cloud/:match*"}]}
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "headers": [
+    {
+      "source": "/feeds/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
+        { "key": "Accept-Ranges", "value": "bytes" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Content-Type", "value": "application/json" }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/pipeline-detections",
+      "destination": "/data/detections.json"
+    },
+    {
+      "source": "/cdn/:match*",
+      "destination": "https://cctv.corp8.cloud/:match*"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

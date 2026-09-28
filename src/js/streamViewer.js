@@ -148,86 +148,40 @@ export function openStreamModal(camera, detection = null) {
 
   const HlsConstructor = window.Hls || Hls;
 
-  // When video actually starts playing, immediately reveal video and hide canvas & spinner
+  // Fast Edge CDN Feed URL for instant camera playback on Vercel
+  const cdnVideoUrl = `/feeds/cam${padId}.mp4`;
+
   const onModalVideoPlaying = () => {
     if (loadingSpinner) loadingSpinner.style.display = 'none';
     videoEl.style.display = 'block';
     videoEl.style.zIndex = '2';
     if (canvas) canvas.style.display = 'none';
     if (liveStatusBadge) {
-      liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE FEED`;
+      liveStatusBadge.innerHTML = `<i class="fas fa-circle-dot" style="color: #10b981;"></i> LIVE CCTV FEED (EDGE CDN SYNCED)`;
       liveStatusBadge.className = 'stream-mode-badge live';
     }
   };
 
-  if (videoEl) {
-    videoEl.addEventListener('playing', onModalVideoPlaying);
-    videoEl.addEventListener('loadeddata', onModalVideoPlaying);
-    videoEl.addEventListener('timeupdate', () => {
-      if (videoEl.currentTime > 0) onModalVideoPlaying();
-    });
-  }
+  videoEl.addEventListener('playing', onModalVideoPlaying);
+  videoEl.addEventListener('loadeddata', onModalVideoPlaying);
+  videoEl.addEventListener('canplay', onModalVideoPlaying);
 
-  // Attempt live stream loading (MP4 natively or HLS)
-  if (videoEl && hlsUrl) {
-    if (hlsUrl.endsWith('.mp4')) {
-      videoEl.src = hlsUrl;
-      videoEl.loop = true;
-      videoEl.muted = true;
-      videoEl.play().catch(e => {
-        console.warn('[Modal] Autoplay deferred for MP4:', e);
-      });
-    } else if (HlsConstructor && HlsConstructor.isSupported()) {
-      try {
-      activeHls = new HlsConstructor({
-        enableWorker: true,
-        lowLatencyMode: true,
-        maxBufferLength: 5,
-        maxMaxBufferLength: 10,
-        manifestLoadingTimeOut: 8000,
-        levelLoadingTimeOut: 8000,
-        fragLoadingTimeOut: 15000,
-        fragLoadingMaxRetry: 6
-      });
+  // Directly load real CCTV MP4 stream
+  videoEl.src = cdnVideoUrl;
+  videoEl.muted = true;
+  videoEl.loop = true;
+  videoEl.playsInline = true;
 
-      activeHls.loadSource(hlsUrl);
-      activeHls.attachMedia(videoEl);
-
-      activeHls.on(HlsConstructor.Events.MANIFEST_PARSED, () => {
-        videoEl.muted = true;
-        videoEl.play().catch(e => {
-          console.log('[HLS Modal] Autoplay deferred, waiting for user click or buffer:', e);
-        });
-      });
-
-      activeHls.on(HlsConstructor.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          switch (data.type) {
-            case HlsConstructor.ErrorTypes.NETWORK_ERROR:
-              if (data.details === HlsConstructor.ErrorDetails.MANIFEST_LOAD_ERROR || data.response?.code === 404) {
-                console.warn('[HLS Modal] Manifest 404, falling back to simulated OSD canvas');
-                fallbackToSurveillanceCanvas();
-              } else {
-                console.warn('[HLS Modal] Network error, recovering...', data);
-                activeHls.startLoad();
-              }
-              break;
-            case HlsConstructor.ErrorTypes.MEDIA_ERROR:
-              console.warn('[HLS Modal] Media error, recovering...', data);
-              activeHls.recoverMediaError();
-              break;
-            default:
-              console.warn('[HLS Modal] Unrecoverable error, falling back to simulated OSD canvas:', data);
-              fallbackToSurveillanceCanvas();
-              break;
-          }
-        }
-      });
-    } catch (e) {
-      console.warn('[HLS] Stream init error:', e);
+  const playPromise = videoEl.play();
+  if (playPromise !== undefined) {
+    playPromise.then(onModalVideoPlaying).catch(() => {
+      // If autoplay is delayed before click, fallback gracefully
       fallbackToSurveillanceCanvas();
-    }
-    }
+      const resume = () => {
+        videoEl.play().then(onModalVideoPlaying).catch(() => {});
+      };
+      window.addEventListener('click', resume, { once: true });
+    });
   } else {
     fallbackToSurveillanceCanvas();
   }

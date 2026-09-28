@@ -1,9 +1,7 @@
 # High-Level Design (HLD) Document
 ## Sentinel Unified Grid — Gujarat CCTV & Vehicle Intelligence Platform
-### Gujarat Police Innovation Challenge 2026 — Deliverable #2 (Step 5)
 
-**Document Version:** 2.0  
-**Authors:** Team CuriousClass (Harshit Mathur & Arin Harwani)  
+**Authors:** Harshit Mathur and Arin Harwani 
 **Target Deployment:** Gujarat State CCTV Grid (~80,000 Cameras across 26 Departments)  
 **Evaluation Scope:** Gujarat Police CCTV Sandbox (~30–50 Real Streams)  
 **Security Classification:** Restricted — Gujarat Police Internal / Hackathon Evaluation

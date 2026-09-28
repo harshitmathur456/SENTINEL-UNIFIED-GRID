@@ -6,8 +6,8 @@
 
 import { VEHICLE_DATABASE } from '../data/detections.js';
 
-const STORAGE_KEY = 'sentinel_anpr_grid_db_v2';
-const STATS_KEY = 'sentinel_anpr_stats_v2';
+const STORAGE_KEY = 'sentinel_anpr_grid_db_v3';
+const STATS_KEY = 'sentinel_anpr_stats_v3';
 
 class ANPRStorageManager {
   constructor() {
@@ -18,14 +18,20 @@ class ANPRStorageManager {
 
   init() {
     try {
+      // Purge legacy storage containing hardcoded plate
+      localStorage.removeItem('sentinel_anpr_grid_db_v2');
       const savedData = localStorage.getItem(STORAGE_KEY);
       const savedStats = localStorage.getItem(STATS_KEY);
 
       if (savedData) {
         this.vehicles = JSON.parse(savedData);
+        // Guarantee hardcoded plate is wiped out
+        delete this.vehicles['GJ01AB1234'];
+        delete this.vehicles['CJ01AB1234'];
       } else {
-        // Seed with baseline vehicle database
+        // Seed with baseline vehicle database (genuine detections & watchlist)
         this.vehicles = JSON.parse(JSON.stringify(VEHICLE_DATABASE));
+        delete this.vehicles['GJ01AB1234'];
         this.persist();
       }
 
@@ -35,6 +41,7 @@ class ANPRStorageManager {
     } catch (err) {
       console.warn('LocalStorage error, falling back to in-memory store:', err);
       this.vehicles = JSON.parse(JSON.stringify(VEHICLE_DATABASE));
+      delete this.vehicles['GJ01AB1234'];
     }
   }
 
@@ -151,9 +158,20 @@ class ANPRStorageManager {
    */
   async syncFromPipelineDetections() {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'https://fin-config-aim-con.trycloudflare.com';
-      const res = await fetch(`${API_BASE}/api/detections`);
-      if (!res.ok) return { success: false, count: 0 };
+      const API_BASE = import.meta.env.VITE_API_BASE || '';
+      let res = null;
+      if (API_BASE) {
+        try {
+          res = await fetch(`${API_BASE}/api/detections`);
+        } catch (e) {}
+      }
+      if (!res || !res.ok) {
+        res = await fetch('/api/pipeline-detections').catch(() => null);
+      }
+      if (!res || !res.ok) {
+        res = await fetch('/data/detections.json').catch(() => null);
+      }
+      if (!res || !res.ok) return { success: false, count: 0 };
       const pipelineEvents = await res.json();
       if (!Array.isArray(pipelineEvents) || pipelineEvents.length === 0) {
         return { success: false, count: 0 };
@@ -161,7 +179,7 @@ class ANPRStorageManager {
 
       let newCount = 0;
       pipelineEvents.forEach(evt => {
-        if (evt.plate_number) {
+        if (evt.plate_number && !evt.plate_number.includes('GJ01AB1234') && !evt.plate_number.includes('CJ01AB1234')) {
           const key = evt.plate_number.toUpperCase().replace(/[^A-Z0-9]/g, '');
           if (!this.vehicles[key]) {
             this.vehicles[key] = {

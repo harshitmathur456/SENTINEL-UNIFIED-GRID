@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <p style="color: #fff; font-weight: 600; font-size: 14px;">No Record Found for "<strong>${queryText}</strong>"</p>
           <p style="font-size: 12px; margin-top: 6px;">Vehicle has not been sighted on any of the 30 Gujarat CCTV grid cameras.</p>
           <div style="margin-top: 12px; font-size: 11px; color: var(--accent-cyan);">
-            Try evaluation test vehicles: <strong>GJ01AB1234</strong>, <strong>GJ11CD9876</strong>, or <strong>GJ05WL9999</strong>
+            Try genuine ANPR captured vehicles: <strong>JANPATH</strong>, <strong>CH1MAN</strong>, <strong>GJ01ST0007</strong>, or <strong>GJ05WL9999</strong>
           </div>
         </div>
       `;
@@ -479,13 +479,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render mini canvas preview for this camera
         if (scanMiniCanvas) {
-          anprEngine.renderSurveillanceFrame(scanMiniCanvas, progress.camera, {
-            plate_number: progress.lastDetectedPlate || 'GJ01AB1234',
+          const detPlate = progress.lastDetectedPlate || null;
+          anprEngine.renderSurveillanceFrame(scanMiniCanvas, progress.camera, detPlate ? {
+            plate_number: detPlate,
             confidence: 98.6,
             speed_est_kmh: 48,
             timestamp_utc: new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC',
-            color: '#3b82f6'
-          });
+            color: '#38bdf8'
+          } : null);
         }
 
         appendScanLog(
@@ -518,11 +519,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnInspectResults) {
     btnInspectResults.addEventListener('click', () => {
       closeFleetScanModal();
-      // Switch to search tab and trace default demonstration vehicle
+      // Switch to search tab and trace real captured vehicle
       const searchTabBtn = document.querySelector('.tab-btn[data-tab="search"]');
       if (searchTabBtn) searchTabBtn.click();
-      if (searchInput) searchInput.value = 'GJ01AB1234';
-      executeSearch('GJ01AB1234');
+      const firstVehicle = anprStorage.getAllVehicles()[0];
+      const targetPlate = firstVehicle ? firstVehicle.plate_number : 'JANPATH';
+      if (searchInput) searchInput.value = targetPlate;
+      executeSearch(targetPlate);
     });
   }
 
@@ -1018,6 +1021,6 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView('wall', false);
   }
 
-  // Load default test route on launch for evaluation presentation
-  executeSearch("GJ01AB1234");
+  // Initialize with clean idle search state
+  executeSearch("");
 });

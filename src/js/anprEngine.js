@@ -155,7 +155,8 @@ export class ANPREngine {
     ctx.stroke();
     ctx.restore();
 
-    // 3. Simulated Vehicle Body
+    if (detection && detection.plate_number) {
+      // 3. Genuine ANPR Detected Vehicle Body
     const carX = width * 0.38;
     const carY = height * 0.46;
     const carW = width * 0.28;
@@ -211,12 +212,14 @@ export class ANPREngine {
     ctx.fillRect(plateX, plateY, 14, plateH);
 
     // Plate Text
-    const plateText = (detection && detection.plate_number) ? detection.plate_number : 'GJ01AB1234';
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 10px "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(plateText, plateX + 48, plateY + 11);
+    const plateText = (detection && detection.plate_number) ? detection.plate_number : '';
+    if (plateText) {
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(plateText, plateX + 48, plateY + 11);
+    }
 
     ctx.restore();
 
@@ -306,6 +309,35 @@ export class ANPREngine {
     ctx.font = 'bold 12px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     ctx.fillText(plateText, zoomX + (zoomW / 2) + 6, zoomY + 33);
+    } else {
+      // Standby Surveillance Radar (Clean CCTV View - Zero mock vehicles/plates)
+      ctx.save();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 25, height / 2);
+      ctx.lineTo(width / 2 + 25, height / 2);
+      ctx.moveTo(width / 2, height / 2 - 25);
+      ctx.lineTo(width / 2, height / 2 + 25);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(width / 2, height / 2, 45, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Optical Telemetry Banner
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(width * 0.22, height * 0.44, width * 0.56, 26);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.strokeRect(width * 0.22, height * 0.44, width * 0.56, 26);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('⚡ AI-ANPR ACTIVE • MONITORING SECTOR', width * 0.5, height * 0.44 + 13);
+      ctx.restore();
+    }
 
     // 6. Camera OSD Surveillance Overlay (Top & Bottom)
     ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';

@@ -1,32 +1,42 @@
 Detection_ID,Plate_Number,Confidence,Camera_ID,Camera_Name,Timestamp_PTS,Timestamp_UTC,Watchlist_Flag,Reason
-DET-LIVE-1-6,CJ01AB1234,48.4,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527559852,2026-09-04 18:42:39.852,False,NONE
-DET-LIVE-1-9,CJ01AB1234,50.4,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527559972,2026-09-04 18:42:39.972,False,NONE
-DET-LIVE-1-12,GJ01AB1234,65.4,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560092,2026-09-04 18:42:40.092,False,NONE
-DET-LIVE-1-15,GJ01AB1234,60.6,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560212,2026-09-04 18:42:40.212,False,NONE
-DET-LIVE-1-18,CJ01AB1234,51.2,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560332,2026-09-04 18:42:40.332,False,NONE
-DET-LIVE-1-24,GJ01AB1234,92.9,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560572,2026-09-04 18:42:40.572,False,NONE
-DET-LIVE-1-27,GJ01AB1234,93.1,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560692,2026-09-04 18:42:40.692,False,NONE
-DET-LIVE-1-30,GJ01AB1234,78.4,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560812,2026-09-04 18:42:40.812,False,NONE
-DET-LIVE-1-33,GJ01AB1234,93.3,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527560932,2026-09-04 18:42:40.932,False,NONE
-DET-LIVE-1-36,GJ01AB1234,87.8,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561052,2026-09-04 18:42:41.052,False,NONE
-DET-LIVE-1-39,GJ01AB1234,94.6,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561172,2026-09-04 18:42:41.172,False,NONE
-DET-LIVE-1-42,GJ01AB1234,94.3,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561292,2026-09-04 18:42:41.292,False,NONE
-DET-LIVE-1-45,GJ01AB1234,86.4,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561412,2026-09-04 18:42:41.412,False,NONE
-DET-LIVE-1-48,GJ01AB1234,95.2,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561532,2026-09-04 18:42:41.532,False,NONE
-DET-LIVE-1-51,GJ01AB1234,98.3,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561652,2026-09-04 18:42:41.652,False,NONE
-DET-LIVE-1-54,GJ01AB1234,98.7,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561772,2026-09-04 18:42:41.772,False,NONE
-DET-LIVE-1-57,GJ01AB1234,96.3,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527561892,2026-09-04 18:42:41.892,False,NONE
-DET-LIVE-1-60,GJ01AB1234,93.8,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562012,2026-09-04 18:42:42.012,False,NONE
-DET-LIVE-1-63,GJ01AB1234,96.5,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562132,2026-09-04 18:42:42.132,False,NONE
-DET-LIVE-1-66,GJ01AB1234,94.1,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562252,2026-09-04 18:42:42.252,False,NONE
-DET-LIVE-1-69,GJ01AB1234,92.5,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562372,2026-09-04 18:42:42.372,False,NONE
-DET-LIVE-1-72,GJ01AB1234,93.9,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562492,2026-09-04 18:42:42.492,False,NONE
-DET-LIVE-1-75,GJ01AB1234,90.3,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562612,2026-09-04 18:42:42.612,False,NONE
-DET-LIVE-1-78,GJ01AB1234,67.9,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562732,2026-09-04 18:42:42.732,False,NONE
-DET-LIVE-1-81,CJ01AB1234,66.7,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562852,2026-09-04 18:42:42.852,False,NONE
-DET-LIVE-1-84,GJ01AB1234,96.3,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527562972,2026-09-04 18:42:42.972,False,NONE
-DET-LIVE-1-87,GJ01AB1234,84.2,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527563092,2026-09-04 18:42:43.092,False,NONE
-DET-LIVE-1-90,GJ01AB1234,53.7,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527563212,2026-09-04 18:42:43.212,False,NONE
-DET-LIVE-1-93,GJ01AB1234,70.0,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527563332,2026-09-04 18:42:43.332,False,NONE
-DET-LIVE-1-96,GJ01AB1234,95.8,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527563452,2026-09-04 18:42:43.452,False,NONE
-DET-LIVE-1-99,GJ01AB1234,95.5,1,"Camera 1 - Chiman bhai Bridge, Ahmedabad",1788527563572,2026-09-04 18:42:43.572,False,NONE
+gov-cam01-1788528816591,FETF,0.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788528817591,CH1MAN,1.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788528817924,4S32,0.3,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam02-1788528920517,JANPATH,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788528920517,CS1TMS,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788528920517,PT22,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788528920851,JANPATH,0.9,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788528920851,IJPTZ2,0.5,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788528920851,CS1TMS,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam01-1788529118493,FETF,0.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119326,CS1TM532,1.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119326,CH1RAVAN,0.4,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119326,BR10GE,0.6,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119326,PT22,0.8,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119326,PHA1,1.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119493,CH1MAN,1.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119826,4S32,0.3,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529119993,SITMS,1.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam01-1788529120326,CH1MAN,1.0,cam01,01 Chiman bhai Bridge,,,False,NONE
+gov-cam02-1788529373885,EUUATNT,0.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529447913,EUUATNT,0.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529450846,JANPATH,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529450846,CS1TMS,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529450846,PT22,0.7,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451113,JANPATH,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451113,CS1TMS,0.5,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451113,PT22,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451646,JANPATH,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451646,IJPTZ2,0.8,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451913,CS1TMS,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451913,JANPATH,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529451913,PT22,0.5,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529452179,JANPATH,0.9,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529452179,CS1TMS,0.9,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529452179,PT22,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529452979,JANPATH,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529452979,CS1TMS,1.0,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529452979,PT22,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529453246,JANPATH,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529453246,CS1TMS,0.6,cam02,02 Janpath,,,False,NONE
+gov-cam02-1788529453246,PT22,0.5,cam02,02 Janpath,,,False,NONE

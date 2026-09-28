@@ -215,77 +215,36 @@ export class CameraWall {
       anprEngine.renderSurveillanceFrame(canvas, cam, null, true);
     }
 
-    // Streaming controller to maintain 60 FPS and prevent CPU/GPU decoding bottlenecks
-    let hlsAttached = false;
-    const startHlsStream = () => {
-      if (hlsAttached || !videoEl || !Hls.isSupported()) return;
-      hlsAttached = true;
+    // Attach fast Edge CDN feed for instant camera feed availability
+    const padId = String(cam.id).padStart(2, '0');
+    const cdnFeedSource = `/feeds/cam${padId}.mp4`;
 
-      try {
-        const hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          maxBufferLength: 2,
-          maxMaxBufferLength: 4,
-          maxBufferSize: 2 * 1024 * 1024,
-          manifestLoadingTimeOut: 10000,
-          levelLoadingTimeOut: 10000,
-          fragLoadingTimeOut: 15000,
-          fragLoadingMaxRetry: 6,
-          manifestLoadingMaxRetry: 6
-        });
-
-        // Function to smoothly switch from canvas to live video
-        const revealLiveVideo = () => {
-          videoEl.style.display = 'block';
-          videoEl.style.zIndex = '2';
-          if (canvas) canvas.style.display = 'none';
-        };
-
-        videoEl.addEventListener('playing', revealLiveVideo);
-        videoEl.addEventListener('loadeddata', revealLiveVideo);
-        videoEl.addEventListener('timeupdate', () => {
-          if (videoEl.currentTime > 0) revealLiveVideo();
-        });
-
-        hls.loadSource(hlsSource);
-        hls.attachMedia(videoEl);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          videoEl.muted = true;
-          videoEl.play().catch(e => {
-            // Autoplay deferred by browser policy, will resume on user interaction
-          });
-        });
-
-        hls.on(Hls.Events.ERROR, (e, data) => {
-          if (data.fatal) {
-            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-              hls.startLoad();
-            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-              hls.recoverMediaError();
-            } else {
-              videoEl.style.display = 'none';
-              if (canvas) canvas.style.display = 'block';
-            }
-          }
-        });
-
-        this.activeHlsInstances.push(hls);
-      } catch (err) {
-        console.warn(`[CameraWall] HLS attach failed for Camera ${cam.id}:`, err);
-      }
+    const revealLiveVideo = () => {
+      videoEl.style.display = 'block';
+      videoEl.style.zIndex = '2';
+      if (canvas) canvas.style.display = 'none';
     };
 
-    const shouldAutoStream = (this.currentMode === '4up') || (this.currentMode === '9up') || (index < 9);
-    if (shouldAutoStream) {
-      startHlsStream();
-    }
+    videoEl.addEventListener('playing', revealLiveVideo);
+    videoEl.addEventListener('loadeddata', revealLiveVideo);
+    videoEl.addEventListener('canplay', revealLiveVideo);
 
-    // Attach stream on mouse hover for any other camera on the wall
-    tile.addEventListener('mouseenter', () => {
-      startHlsStream();
-    });
+    videoEl.src = cdnFeedSource;
+    videoEl.muted = true;
+    videoEl.loop = true;
+    videoEl.playsInline = true;
+
+    // Immediate playback for fast availability on Vercel
+    const playPromise = videoEl.play();
+    if (playPromise !== undefined) {
+      playPromise.then(revealLiveVideo).catch(() => {
+        const resumeOnUser = () => {
+          videoEl.play().then(revealLiveVideo).catch(() => {});
+        };
+        window.addEventListener('click', resumeOnUser, { once: true });
+        window.addEventListener('touchstart', resumeOnUser, { once: true });
+      });
+    }
   }
 }
 
